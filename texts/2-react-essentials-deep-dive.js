@@ -210,7 +210,7 @@ export default Examples;
  * 
  * 1. there are common two "section" and "content" code!
  * 
-Look into it... 
+A Look into it... 
 ---
 1. CoreConcepts.jsx:
 ---
@@ -382,8 +382,8 @@ function Examples() {
  * ---
 in TabButton.jsx:
 ---
-pre: function TabButton({ children, onSelect, isSelected }) {
-ref: function TabButton({ children, isSelected, ...props}) {
+previously: function TabButton({ children, onSelect, isSelected }) {
+refactored: function TabButton({ children, isSelected, ...props}) {
 
   return (
     <li>
@@ -479,6 +479,452 @@ export default function Input({richText, ...props}) {                       //? 
   }                                                     
   return <input {...props}/>
 }
+ * 
+ * 
+ * ! 6. Working with multiple JSX slots
+ * -------------------------------------- 
+ * - creating another wrapper component: "Tabs" 
+ *    - where there might be a need to repeat this component for any requirement
+ * 
+A LOOK INTO THE CODE:
+
+
+function Examples() {
+  const [selectedTopic, setSelectedTopic] = useState("");
+
+  function handleSelect(selectedBtn) {
+    setSelectedTopic(selectedBtn);
+  }
+
+  return (
+    <>
+      <Section title="examples" id="examples">
+        <menu>        //? Tabs starts from here: CLICKABLE
+          <TabButton
+            onClick={() => {
+              handleSelect("components");
+            }}
+            isSelected={selectedTopic === "components"}
+          >
+            Components
+          </TabButton>
+        </menu>           //? content to display starts from here: RENDERS data 'onClick'
+        <div id="tab-content">
+          {!selectedTopic && <p>Please Select a Topic</p>}
+          {selectedTopic && (
+            <div>
+              <h3>{EXAMPLES[selectedTopic].title}</h3>
+              <p>{EXAMPLES[selectedTopic].description}</p>
+              <pre>
+                <code>{EXAMPLES[selectedTopic].code}</code>
+              </pre>
+            </div>
+          )}
+        </div>
+      </Section>
+      <h2>Time to get started!</h2>
+    </>
+  );
+}
+export default Examples;
+ * 
+ * - if there is a requirement, we can repeat the wrapper we about to create now for other components too... 
+ * 
+1. create a Tabs.jsx component:
+---
+
+function Tabs({ children, buttons }) {    //? this requires two props.. children and buttons
+  return (
+    <>
+      <menu>{buttons}</menu>    //? where {buttons} sent through Attribute props
+      {children}            //? this sent as the actual content!
+    </>
+  );
+}
+export default Tabs;
+
+2. inside Examples.jsx:
+---
+import Tabs from "./Tabs.jsx";
+
+function Examples() {
+  const [selectedTopic, setSelectedTopic] = useState("");
+
+  function handleSelect(selectedBtn) {
+    setSelectedTopic(selectedBtn);
+  }
+
+  return (
+    <>
+      <Section title="examples" id="examples">
+        <Tabs         //? that custom component is used here! 
+          buttons={         //? Attribute Props
+            <>
+              <TabButton
+                onClick={() => {
+                  handleSelect("components");
+                }}
+                isSelected={selectedTopic === "components"}
+              >
+                Components
+              </TabButton>
+              <TabButton
+                onClick={() => {
+                  handleSelect("jsx");
+                }}
+                isSelected={selectedTopic === "jsx"}
+              >
+                JSX
+              </TabButton>
+              <TabButton
+                onClick={() => {
+                  handleSelect("props");
+                }}
+                isSelected={selectedTopic === "props"}
+              >
+                Props
+              </TabButton>
+              <TabButton
+                onClick={() => {
+                  handleSelect("state");
+                }}
+                isSelected={selectedTopic === "state"}
+              >
+                State
+              </TabButton>
+            </>
+          }
+        >
+          <div id="tab-content">      //? Children Props
+            {!selectedTopic && <p>Please Select a Topic</p>}
+            {selectedTopic && (
+              <div>
+                <h3>{EXAMPLES[selectedTopic].title}</h3>
+                <p>{EXAMPLES[selectedTopic].description}</p>
+                <pre>
+                  <code>{EXAMPLES[selectedTopic].code}</code>
+                </pre>
+              </div>
+            )}
+          </div>
+        </Tabs>
+      </Section>
+      <h2>Time to get started!</h2>
+    </>
+  );
+}
+export default Examples;
+ * 
+ * 
+ * ! 7. Set components type dynamically
+ * --------------------------------------- 
+ * 
+- inside the below code... there might be a chance to use different wrappers around the "buttons"
+ex:
+function Tabs({ children, buttons }) {
+  return (
+    <>
+      <menu>{buttons}</menu>    //? here! we can use different wrapper classes around the buttons
+      {children}
+    </>
+  );
+}
+export default Tabs;
+ * 
+ * - so there is a chance to wrap "buttons" with some other wrapper class dynamically
+ *    - when we use in different section! we may get another wrapper class other than "menu" around 'buttons'
+ * 
+ * - to set dynamically the component type or wrapper class.. we can get using 'props'
+ *    - and we can send the value to that 'prop' that will wrap around the 'buttons' on requirement of dev - dynamically!
+ * 
+ * Note: 
+ * 1. we can also send our custom props that will wrap buttons or else if it can be div/menu/h1/header etc... 
+ *    - then the value must be passed like "div"/"menu"/"h1"/"header" etc...
+ * 2. But for custom components the value must be wrapped in {} => {Section}/{Header} => these components that we created!
+ * 
+ex: 
+1. props receiving component... 
+---
+function Tabs({ children, buttons, buttonsContainer }) {     //? props received here...
+  const ButtonsContainer = buttonsContainer;                          //* importance
+  return (
+    <>
+      <ButtonsContainer>{buttons}</ButtonsContainer>
+      {children}
+    </>
+  );
+}
+export default Tabs;
+
+2. props sending component... 
+---
+import Tabs from "./Tabs.jsx";      //? component is imported here...
+
+function Examples() {
+  const [selectedTopic, setSelectedTopic] = useState("");
+
+  function handleSelect(selectedBtn) {
+    setSelectedTopic(selectedBtn);
+  }
+
+  return (
+    <>
+      <Section title="examples" id="examples">
+        <Tabs
+          buttonsContainer= "menu"           //? value for props is sent here!
+          buttons={
+            <>
+              <TabButton
+                onClick={() => {
+                  handleSelect("components");
+                }}
+                isSelected={selectedTopic === "components"}
+              >
+                Components
+              </TabButton>
+              ...
+              </>
+          }
+        >
+          <div id="tab-content">
+          ...content rendered here on clicking tabs... 
+          </div>
+        </Tabs>
+      </Section>
+      <h2>Time to get started!</h2>
+    </>
+  );
+}
+export default Examples;
+ * 
+ * 
+ * * function Tabs({ children, buttons, buttonsContainer }) {     //? props received here...
+ * * const ButtonsContainer = buttonsContainer;                                 //? importance
+ * 
+ * ? why didn't we use 'buttonsContainer' directly? 
+ * - cause react looks for built-in "buttonsContainer" cause it started with small-case - every component in HTML starts with small-case
+ * - so, we used const ButtonsContainer and stored the value we received from the props
+ * 
+1. Direct props transferring!
+---
+import Tabs from "./Tabs.jsx";
+
+function Examples() {
+  const [selectedTopic, setSelectedTopic] = useState("");
+
+  function handleSelect(selectedBtn) {
+    setSelectedTopic(selectedBtn);
+  }
+
+  return (
+    <>
+      <Section title="examples" id="examples">
+        <Tabs
+          //* ButtonsContainer= "menu"    
+          //? we directly sending the "ButtonsContainer" to the props
+..............................................
+2. receiving props:
+---
+function Tabs({ children, buttons, ButtonsContainer }) {
+//   const ButtonsContainer = buttonsContainer;                 //? instead of using other constant and storing the value
+  return (
+    <>
+      <ButtonsContainer>{buttons}</ButtonsContainer>        //? ButtonsContainer is used here... 
+      {children}
+    </>
+  );
+}
+export default Tabs;
+ * 
+ * * Note: 
+ * * custom components has to be sent wrapping with '{}' curly braces {}!
+ * * built-in components has to be sent normally inside quotations like values ""!
+ * 
+ * 
+ * ! 8. Setting default props value
+ * ----------------------------------- 
+ * - taking previous example into consideration!
+ * 
+1. receiving props:                                   //? we can set default values like this.. so no need to send props from the main component, where we use this custom component
+---                                                             /
+function Tabs({ children, buttons, ButtonsContainer= "menu" (or) Section }) {
+//   const ButtonsContainer = buttonsContainer;                 
+  return (
+    <>
+      <ButtonsContainer>{buttons}</ButtonsContainer>         
+      {children}
+    </>
+  );
+}
+export default Tabs;
+ * 
+ * - ButtonsContainer might get a value while destructuring that can be a value wrapped in "" or {}
+ *    - if wrapped inside "" will be a built-in component class or if it was wrapped inside {} is considered to be a custom component
+ * 
+ * Note: the custom component must be imported into file, before we use it!
+ * 
+ * 
+ * 
+ * ! Challenge
+ * >------------
+ * Q: 
+ * Your task is to build a highly re-usable, custom Button component that can be used in all the following ways (also see the code in the App.js file):
+ * 
+ * Hint:
+ * - To make sure the icon becomes visible (if passed correctly to the component & used in there), wrap the icon component in the button with a <span> that has the class "button-icon" on it.
+ *    - Also wrap the children prop with a <span>!
+ *    - You find all the styles (CSS classes) that are required to build a button that supports these different "modes" in the provided index.css file!
+ *    - All buttons need a button CSS class - and then, depending on their mode, additional classes.
+ *    - In addition, the custom Button component must accept all standard props that could be set on the built-in <button>. These props should be forwarded to the default <button> element that will be used in the custom Button component.
+ *    - Your task therefore is to work on the Button component provided in the Button.js file. Don't add multiple custom components, instead work on that one provided component and make sure that it supports all these different modes & features. Also make sure, that if no mode is set, the "filled" mode is assumed as a default.
+ * 
+ * 
+App.jsx:
+---
+import Button from './Button';
+import HomeIcon from './HomeIcon';
+import PlusIcon from './PlusIcon';
+
+function App() {
+  return (
+     <div id="app">
+      <section>
+        <h2>Filled Button (Default)</h2>
+        <p>
+          <Button>Default</Button>
+        </p>
+        <p>
+          <Button mode="filled">Filled (Default)</Button>
+        </p>
+      </section>
+      <section>
+        <h2>Button with Outline</h2>
+        <p>
+          <Button mode="outline">Outline</Button>
+        </p>
+      </section>
+      <section>
+        <h2>Text-only Button</h2>
+        <p>
+          <Button mode="text">Text</Button>
+        </p>
+      </section>
+      <section>
+        <h2>Button with Icon</h2>
+        <p>
+          <Button Icon={HomeIcon}>Home</Button>
+        </p>
+        <p>
+          <Button Icon={PlusIcon} mode="text">
+            Add
+          </Button>
+        </p>
+      </section>
+      <section>
+        <h2>Buttons Should Support Any Props</h2>
+        <p>
+          <Button mode="filled" disabled>
+            Disabled
+          </Button>
+        </p>
+        <p>
+          <Button onClick={() => console.log('Clicked!')}>Click me</Button>
+        </p>
+      </section>
+    </div>
+  );
+}
+export default App;
+--------------------------------------------------------------------
+2. Button.jsx:
+---
+export default function Button({children, className, mode="filled", Icon, ...props}) {
+    
+    let cssClasses= `button ${mode}-button`
+    
+    if(Icon){
+        cssClasses = cssClasses + ' icon-button'
+    }
+    
+    if(className){
+        className = className + " " + className
+    }
+    
+    return (
+         <button className={cssClasses} {...props}>
+      {Icon && (
+        <span className="button-icon">
+          <Icon />
+        </span>
+      )}
+        <span>{children}</span>
+        </button>
+    )
+}
+export default App;
+--------------------------------------------------------------------
+export default function PlusIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+    >
+      <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+    </svg>
+  );
+}
+--------------------------------------------------------------------
+export default function HomeIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+    >
+      <path
+        fillRule="evenodd"
+        d="M9.293 2.293a1 1 0 011.414 0l7 7A1 1 0 0117 11h-1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3a1 1 0 00-1-1H9a1 1 0 00-1 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-6H3a1 1 0 01-.707-1.707l7-7z"
+        clipRule="evenodd"
+      />
+    </svg>
+  );
+}
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ * 
+ * ! 9. towards next project and advanced topics
+ * ---------------------------------------------
+ * - there is static markups inside a project ? "we can use index.html to render those markups" : ""
+ *    - "inside index.html before the line of '<div id="root"></div>' "
+ex:
+---
+<body>
+  <header>
+    <img src="game-logo.png" alt="Tic-Tac-Toe image!">
+    <h1>Tic-Tac-Toe</h1>
+  </header>
+  <div id="root"></div>
+  <script type="module" src="/src/index.jsx"></script>
+</body>
+ * 
+ * - like above we can just include the components into "index.html" which does not depend on anything (state/ react's specific)!
+ * 
+ * Note: 
+ * - we can also just refer to the image "game-logo.png" inside public folder! cause public will be served along side of index.html and no need to set up a path to get the image file
+ * 
+ * 
+ * ! 10. Project: 1st Step Towards Tic-Tac-Toe
+ * ----------------------------------------------
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
  * 
  * 
  * 
