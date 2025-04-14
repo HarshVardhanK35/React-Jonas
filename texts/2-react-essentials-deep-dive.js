@@ -916,24 +916,86 @@ ex:
  * ! 10. Project: 1st Step Towards Tic-Tac-Toe
  * ----------------------------------------------
  * 
+ * ! 11. Concept Repetition: Splitting Components and Building Re-Usable Components
+ * ----------------------------------------------------------------------------------
  * 
+ * ! 12. Concept Repetition: Working with state
+ * ----------------------------------------------
  * 
+ * ! 13. Component Instances Work in Isolation
+ * ----------------------------------------------
  * 
+ * ! 14. Conditional Content and Sub-optimal way of updating state
+ * -----------------------------------------------------------------
  * 
+ * ! 15. Best practices: Updating state based on old state correctly! 
+ * -------------------------------------------------------------------
  * 
+ * ! 16. User Input and Two-Way Binding
+ * --------------------------------------
  * 
+ * ! > Challenge
+ * ----------------
+ * ? Q : Two-Way-Binding
+Your task is to collect the values entered into the two input controls (<textarea> and <input>) via two-way binding.
+In addition, you should pass the collected values via the appropriate props to the already existing Review component.
+Important: In this Udemy workspace, you must use React.useState() instead of just useState()!
+The final app should allow users to enter values and then see those entered values in the Review component which is output below the input components. 
+
+App.js
+---
+import React from 'react';
+import Review from './Review';
+
+function App() {
+    const [enteredFeedback, setEnteredFeedback] = React.useState("")
+    const [studentName, setStudentName] = React.useState("")
+    function handleTextArea(e) {
+        setEnteredFeedback(e.target.value)
+    }
+    function handleName(e) {
+        setStudentName(e.target.value)
+    }
+  return (
+    <>
+      <section id="feedback">
+        <h2>Please share some feedback</h2>
+        <p>
+          <label>Your Feedback</label>
+          <textarea value={enteredFeedback} onChange={handleTextArea} />
+        </p>
+        <p>
+          <label>Your Name</label>
+          <input type="text" value={studentName} onChange={handleName}/>
+        </p>
+      </section>
+      <section id="draft">
+        <h2>Your feedback</h2>
+        <Review feedback = {enteredFeedback} student = {studentName}/>
+        <p>
+          <button>Save</button>
+        </p>
+      </section>
+    </>
+  );
+}
+export default App;
+
+Review.jsx:
+---
+export default function Review({ feedback, student }) {
+  return (
+    <figure>
+      <blockquote>
+        <p>{feedback}</p>
+      </blockquote>
+      <figcaption>{student}</figcaption>
+    </figure>
+  );
+}
  * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
+ * ! 17. 
+ * --------------------------------------
  * 
  * 
  * 
