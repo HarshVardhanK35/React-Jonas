@@ -1,0 +1,34 @@
+{
+  "git.ignoreLimitWarning": true,
+
+  // Prettier formatter
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  // Emmet support for JSX
+  "emmet.includeLanguages": {
+    "javascript": "javascriptreact"
+  },
+  "emmet.triggerExpansionOnTab": true,
+
+  // Auto-closing & formatting
+  "editor.autoClosingTags": "always",
+  "editor.autoClosingBrackets": "always",
+  "editor.formatOnType": true,
+  "editor.formatOnSave": true,
+  "editor.autoIndent": "advanced",
+
+  // Optional but useful
+  "editor.tabSize": 2,
+
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 500,
+  "javascript.inlayHints.parameterNames.enabled": "all",
+  "javascript.inlayHints.parameterTypes.enabled": true,
+  "javascript.inlayHints.propertyDeclarationTypes.enabled": true
+}
