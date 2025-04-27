@@ -229,22 +229,153 @@ function App() {
  * - 4. when building a component, imagine it's view as a "reflection of state changing over a time"
  * - 5. if re-renders are not needed, or change in state is not needed use "regular variable"
  * 
+ * ! 9. THE FAR AWAY: TRAVEL LIST PROJECT
+ * ! 9.1 Building Form and Handling Submissions
  * 
+ * - here we've created a form and handling events related to that form
  * 
+ex:
+function Form() {
+  function handleSubmit(e) {
+    e.preventDefault() 
+  } 
+  return (
+    <>
+      <form className="add-form" onSubmit={handleSubmit}>
+        <h3>What do you need for your trip?</h3>
+        <select name="" id="">
+          {Array.from({ length: 20 }, (_, i) => i + 1).map((num) => (
+            <option value={num} key={num}>
+              {num}
+            </option>
+          ))}
+        </select>
+        <input type="text" placeholder="Items... " />
+        <button>Add</button>
+      </form>
+    </>
+  );
+}
+ * - while handling submission events related to that form.. 
+ *    - we have a function handleSubmit() to handle the submit of the form
+ * - whenever we submit the form, the page automatically reloads.. which is a default behavior of the page
+ *    - so to prevent this.. we use "e.preventDefault()"
  * 
+ * - the "onSubmit" function inside the form calls the "handleSubmit" function and attaches an "event-e" to "handleSubmit" function
+ *    - which passes all the info of that current-event into "e" for that function!
  * 
+ * - we have not attached the handleSubmit function to the button (it was attached to the form...), so the event will be called ... 
+ *    - 1. whenever we press "enter" after entering input
+ *    - 2. and also whenever we click the "button" attached to the form
  * 
+ * - Note that we have not attached this function on to the button!
  * 
+ * - so, we need to get the data from the form and select options.. we could get that from the "event" object
+ *    - but in react we don't get the data from the form using "event object" but we get that using // >>> "controlled elements"
  * 
+ * ! 9.2 Controlled Elements
  * 
+ * - form elements like input, select option puts all their values inside it's DOM, but we use React Application not the DOM 
+ *    - (if we want data, we have to use DOM.. then it will become imperative!)
  * 
+ * - so, we use //>>> Controlled Elements
+ *    - where react controls and owns the state of these input fields but not the DOM!
  * 
+ * - to set-up controlled elements! we follow three steps
+ *    - 1. include a piece of state (for the input we enter into the text box)
+ *    - 2. SET the value to the initial value / state of useState()
+ *    - 3. listen to "onChange" on the <input> 
  * 
+ * - while listening to "onChange" the event gets fired off for every text we enter inside the input box!
  * 
+ * $ Note:
+ * - the whole process includes.. 
+ *  - set the state variable to the value of the form element and change it using "onChange" and also the "setter" function (setter from useState())
+ * ex:
+function Form() {
+  const [description, setDescription] = useState("");
+  const [quantity, setQuantity] = useState(1);
+
+  function handleSubmit(e) {
+    e.preventDefault();
+
+    if (!description) {
+      alert("Needs at least one description!")
+      return
+    }
+    const newItem = {
+      id: Date.now(),
+      description: description,
+      quantity: quantity,
+      packed: false
+    }
+    setDescription("")
+    setQuantity(1)
+  }
+
+  return (
+    <>
+      <form className="add-form" onSubmit={handleSubmit}>
+        <h3>What do you need for your trip?</h3>
+        <select
+          value={quantity}
+          onChange={(e) => setQuantity(Number(e.target.value))}
+        >
+          {Array.from({ length: 20 }, (_, i) => i + 1).map((num) => (
+            <option value={num} key={num}>
+              {num}
+            </option>
+          ))}
+        </select>
+        <input
+          type="text"
+          placeholder="Items... "
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
+        <button>Add</button>
+      </form>
+    </>
+  );
+}
+
+function PackingList() {
+  return (
+    <div className="list">
+      <ul>
+        {initialItems.map((item) => {
+          return <Item key={item.id} item={item} />;
+        })}
+      </ul>
+    </div>
+  );
+}
  * 
+ * - Now, we have to send the data from "Form" to "PackingList"
+ *  
+ * - can we send it through "props"?
+ *    - no, cause Form and PackingList items are not parent-child, they are on side-ways (siblings)
  * 
+ * ! 10. State vs. Props
  * 
+ * * STATE >>>
+ * - state is internal data, owned by a component in which it is declared!
+ * - component's memory!
+ * - can only be changed/updated by the component where it was declared >>> updating state cause the application to re-render!
+ *    - this makes react applications "INTERACTIVE" 
  * 
+ * * PROPS >>>
+ * - props is an external data, owned by the "Parent-component" >>> similar to functional parameters
+ * - here parents pass their data to their children
+ * - props are read-only data >>> cannot be updated/modified by the receiving component (but can be mutable using parents)
+ * >>> receiving new props causes component to re-render! 
+ * 
+ * ? How the props can be mutated using Parent-Component?
+ * >>> can be done with state inside parent-component >>> after mutating, can cause re-rendering!
+ * 
+ * $ Note:
+ * - whenever parent-child are interconnected with "props" and state inside parent component updates >>> changes the props and child component receives the changed props
+ *    - in-order to keep child in sync with parent, re-renders happens!
  * 
  * 
  * 
