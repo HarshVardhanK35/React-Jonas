@@ -46,10 +46,12 @@ function Pizza(){
  *      - as browsers do not understand JSX so, behind the scenes code will be converted to JS  
  * 
  * * IMPERATIVE vs DECLARATIVE
- *  - Imperative: where manual DOM manipulation is done with vanilla JS: "!!! DOM Manipulation !!!"
+ *  => Imperative: 
+ * - where manual DOM manipulation is done with vanilla JS: "!!! DOM Manipulation !!!"
  *      - we tell the browser how to do manipulations, so this is hard and REACT comes handy replacing DOM Manipulation!
  * 
- *  - Declarative: describe how UI looks like with current data that this data is mostly : "props" and "state"
+ *  => Declarative:
+ * - describe how UI looks like with current data that this data is mostly : "props" and "state"
  *      - there will be no DOM manipulations... 
  *      - React is an abstraction >>> React takes care of DOM => behind the scenes
  *  - WE DON'T TOUCH DOM HERE! 
