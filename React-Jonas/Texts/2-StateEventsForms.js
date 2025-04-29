@@ -275,6 +275,9 @@ function Form() {
  * 
  * ! 9.2 Controlled Elements
  * 
+ * >>> Controlled Elements:
+ * - that the element has value defined by some state, and it also has an event handler -> listens for a change and updates the state accordingly!
+ * 
  * - form elements like input, select option puts all their values inside it's DOM, but we use React Application not the DOM 
  *    - (if we want data, we have to use DOM.. then it will become imperative!)
  * 

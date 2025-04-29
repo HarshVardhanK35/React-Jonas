@@ -65,26 +65,286 @@
  * - if that state is needed one or few sibling components or even for a parent component of a particular/specific current component
  *  - then move that state to it's common parent component this is called //=> Lifting Up STATE
  * 
+ * ! 3. Thinking About State and Lifting State Up
  * 
+ * $ NOTE:
+ * - whenever a new state depends upon the current state, use a "callback function"
+ * - in react, we can mutate the existing state.. so we can use either .slice() or [...] spread operator to copy the original array
  * 
+ * >>> Lifting state up:
+ * - whenever siblings want to share the same state, we lift the state to it's common parent component!
+ * - so, after lifting the state to the common parent, the state variable can be passed to the both children through props
+ * - (the state-setter function can also be shared via props)
  * 
+ * $ Note:
+ * - if a child wants to set new state or update the existing state, as the state lies inside the common parent...
+ *      - we cannot change the state that lies inside the parent
+ * >>> so, the setter function can also be shared to the child component via props and can be updated inside that child!
  * 
+ * $ Note:
+ * - whenever we update the state using passed state-setter function from the child, 
+ *      - then updated state will be transferred from child to parent (that is data "flowing" up) 
  * 
+ * => inverse data flow:
+ * - child to parent data transfer, this is called //=> "inverse data flow"
+ *      - (happens after updating state using setState function)
+ * - as this inverse flow does not happen inside react >>> cause data flow only from parent to child
  * 
+ * - ex: CHECKOUT(parent) - TOTAL(child-1) and PROMOTIONS(child-2)  
+ *      - coupons and setCoupons data is flowed from parent to child via props
+ *      - setCoupons used inside "PROMOTIONS" to set new coupon, after setting coupon that data will be sent again to it's parent component
  * 
+ * - IN BELOW EXAMPLE,
+ *      - ONLY LIFTING STATE EXPLAINED BUT NOT INVERSE DATA FLOW! 
+ * ex:
+function App() {
+  const [items, setItems] = useState([]);
+  function handleAddItems(item) {
+    setItems((items) => [...items, item]);
+  }
+  return (
+    <>
+      <div className="app">
+        <Logo />
+        <Form onAddItems={handleAddItems} />
+        <PackingList items={items} />
+        <Stats />
+      </div>
+    </>
+  );
+}
+function Form({ onAddItems }) {
+  const [description, setDescription] = useState("");
+  const [quantity, setQuantity] = useState(1);
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    if (!description) {
+      alert("Needs at least one description!");
+      return;
+    }
+    const newItem = {
+      id: Date.now(),
+      description: description,
+      quantity: quantity,
+      packed: false,
+    };
+    onAddItems(newItem);
+
+    setDescription("");
+    setQuantity(1);
+  }
+  return (
+    <>
+      <form className="add-form" onSubmit={handleSubmit}>
+        <h3>What do you need for your trip?</h3>
+        <select
+          value={quantity}
+          onChange={(e) => setQuantity(Number(e.target.value))}
+        >
+          {Array.from({ length: 20 }, (_, i) => i + 1).map((num) => (
+            <option value={num} key={num}>
+              {num}
+            </option>
+          ))}
+        </select>
+        <input
+          type="text"
+          placeholder="Items... "
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
+        <button>Add</button>
+      </form>
+    </>
+  );
+}
+function PackingList({ items }) {
+  return (
+    <div className="list">
+      <ul>
+        {items.map((item) => {
+          return <Item key={item.id} item={item} />;
+        })}
+      </ul>
+    </div>
+  );
+}
+function Item({ item }) {
+  return (
+    <li>
+      <span style={item.packed ? { textDecoration: "line-through" } : {}}>
+        {item.quantity} {item.description}
+      </span>
+      <button>❌</button>
+    </li>
+  );
+}
  * 
+ * ! 4. Deleting an Item: More Child-to-Parent Communication!
  * 
+ * - here Child-Parent communication was demonstrated with an example!
+ * ex:
+
+function App() {
+  const [items, setItems] = useState([]);
+
+  function handleAddItems(item) {
+    setItems((items) => [...items, item]);
+  }
+
+  function handleDelete(id) {
+    setItems((items) => items.filter((item) => item.id !== id));    //>>> changes the existing array
+  }
+
+  return (
+    <>
+      <div className="app">
+        <Logo />
+        <Form onAddItems={handleAddItems} />
+        <PackingList items={items} onDeleteItems={handleDelete} />      //>>> function: handleDelete is passed via props
+        <Stats />
+      </div>
+    </>
+  );
+}
+function PackingList({ items, onDeleteItems }) {
+  // console.log(items)
+  return (
+    <div className="list">
+      <ul>
+        {items.map((item) => {
+          return <Item key={item.id} item={item} onDeleteItems={onDeleteItems}/>;   //>>> function is passed again cause "PackingList" comp is dependent on "Item" comp
+        })}
+      </ul>
+    </div>
+  );
+}
+function Item({ item, onDeleteItems }) {
+  return (
+    <li>
+      <span style={item.packed ? { textDecoration: "line-through" } : {}}>
+        {item.quantity} {item.description}
+      </span>
+      <button onClick={() => {onDeleteItems(item.id)}}>❌</button>      //>>> functional - deletion operation (clicking on it updates the newItems- state)
+    </li>
+  );
+}
  * 
+ * ! 5. Updating an Item: Complex Immutable Data Operation
  * 
+ * - on checking the box, strike through the item
  * 
+ * ex:
+function App() {
+  const [items, setItems] = useState([]);
+
+  function handleToggleItem(id) {     
+    setItems((items) => {
+      return items.map((item) => {
+        return item.id === id ? { ...item, packed: !item.packed } : {...item};    //>>> checking with ID and updating the existing item with respective ID
+      });
+    });
+  }
+  return (
+    <>
+      <div className="app">
+        <Logo />
+        <Form onAddItems={handleAddItems} />
+        <PackingList
+          items={items}
+          onDeleteItems={handleDelete}
+          onUpdateItem={handleToggleItem}   //>>> sending the "handleToggleItem" function as props
+        />
+        <Stats />
+      </div>
+    </>
+  );
+}
+function PackingList({ items, onDeleteItems, onUpdateItem }) {    //>>> receiving as props
+  return (
+    <div className="list">
+      <ul>
+        {items.map((item) => {
+          return (
+            <Item
+              key={item.id}
+              item={item}
+              onDeleteItems={onDeleteItems}
+              onUpdateItem={onUpdateItem}     //>>> sending the function to the "item" as props
+            />
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+function Item({ item, onDeleteItems, onUpdateItem }) {    //>>> receiving again as props
+  return (
+    <li>
+      <input
+        type="checkbox"
+        value={item.packed}
+        onChange={() => {
+          onUpdateItem(item.id);    //>>> using the received function via props
+        }}
+      />
+      <span style={item.packed ? { textDecoration: "line-through" } : {}}>
+        {item.quantity} {item.description}
+      </span>
+      <button
+        onClick={() => {
+          onDeleteItems(item.id);
+        }}
+      >
+        ❌
+      </button>
+    </li>
+  );
+}
  * 
+ * - snippet:
+function handleToggleItem(id) {     
+  setItems((items) => {
+    return items.map((item) => {
+      return item.id === id ? { ...item, packed: !item.packed } : {...item};    //>>> checking with ID and updating the existing item with respective ID
+    });
+  });
+}
  * 
+ * - this above logic is important!!!
  * 
+ * ! 6. Derived State
+ * >>> state that is computed from an existing piece of state or from props
  * 
+ * eX: 
+const [cart, setCart] = useState([
+{ name: "JavaScript Course", price: 15.99
+{ name: "Node.js Boot-camp", price: 14.99
+]);
+const [numItems, setNumItems] useState(2);
+const [totalPrice, setTotalPrice] = useSta haate(30.98);
  * 
+ * - here,
+ * - Three separate pieces of state, even though numItems and totalPrice depend on cart
+ * - Need to keep them in sync (update together)
+ * - 3 state updates will cause 3 re-renders in UI
  * 
+ * * Derived State:
+ * - instead of creating three separate states.. we can create a derived state (derived from a single and existing state)
+ * ex:
+const [cart setCart] = useState([
+  { name: "JavaScript Course", price: 15.99}, 
+  { name: "Node.js Bootcamp", price: 14.99 },
+]);
+const numItems = cart. Length;
+const totalPrice = cart.reduce((acc, cur) acc + cur.price, 0)
  * 
+ * - Just regular variables, no useState is necessary
+ * - cart state is the single source of truth for this related data 
+ * - Works because re-rendering component will automatically re-calculate derived state
  * 
+ * ! 7. Calculating Statistics as Derived State
  * 
  * 
  * 
