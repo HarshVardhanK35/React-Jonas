@@ -346,7 +346,77 @@ const totalPrice = cart.reduce((acc, cur) acc + cur.price, 0)
  * 
  * ! 7. Calculating Statistics as Derived State
  * 
+ * ! 8. Children Props
  * 
+ * - the props that are passed in between opening and closing re-usable components are called "children props"
+ *    - these props are passed with in-built react keyword "children"
+ * ex:
+
+function App() {
+  const [step, setStep] = useState(1);
+  const [isOpen, setIsOpen] = useState(true);
+
+  function handlePrevious() {
+    if (step > 1) {
+      setStep((curStep) => curStep - 1);
+    }
+  }
+  function handleNext() {
+    if (step < 3) {
+      setStep((curStep) => curStep + 1);
+    }
+  }
+
+  return (
+    <>
+      <button
+        className="close"
+        onClick={() => {
+          setIsOpen((isOpen) => !isOpen);
+        }}
+      >
+        &times;
+      </button>
+      {isOpen && (
+        <div className="steps ">
+          <div className="numbers ">
+            <div className={step === 1 ? "active" : ""}>1</div>
+            <div className={step === 2 ? "active" : ""}>2</div>
+            <div className={step === 3 ? "active" : ""}>3</div>
+          </div>
+
+          <p className="message ">
+            Step {step}: {messages[step - 1]}
+          </p>
+
+          <div className="buttons ">
+            <Button                       //>>> opening tag
+              bgColor={"#7950f2"}
+              txtColor={"#fff"}
+              onClick={handlePrevious}
+            >
+              <span>👈</span> Previous    //>>> The content is passed as "children"
+            </Button>                     //>>> closing tag
+            <Button bgColor={"#7950f2"} txtColor={"#fff"} onClick={handleNext}>
+              Next <span>👉</span>
+            </Button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+function Button({ bgColor, txtColor, onClick, children }) {   //>>> received as "children" props
+  return (
+    <button
+      style={{ backgroundColor: bgColor, color: txtColor }}
+      onClick={onClick}
+    >
+      {children}      //>>> "children" used props
+    </button>
+  );
+} 
  * 
  * 
  * 

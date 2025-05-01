@@ -1,3 +1,4 @@
+// !!! this version of application opens only one accordion at a time !!!
 import { useState } from "react";
 
 const faqs = [
@@ -24,25 +25,39 @@ function App() {
 }
 
 function Accordion({ data }) {
+  const [curOpen, setCurOpen] = useState(null);
+
   return (
     <div className="accordion">
       {data.map((el, i) => {
-        return <AccordionItem key={el.title} num={i} title={el.title} content={el.text} />;
+        return (
+          <AccordionItem
+            key={el.title}
+            num={i}
+            title={el.title}
+            curOpen={curOpen}
+            onCurOpen={setCurOpen}
+          >
+            {el.text}
+          </AccordionItem>
+        );
       })}
     </div>
   );
 }
-function AccordionItem({ num, title, content }) {
-  const [onOpen, setOnOpen] = useState(false);
+
+function AccordionItem({ num, title, children, curOpen, onCurOpen }) {
+  const isOpen = num === curOpen;
+
   function handleOpen() {
-    setOnOpen((onOpen) => !onOpen)
+    onCurOpen(isOpen ? null : num);
   }
   return (
-    <div className={`item ${onOpen ? "open" : null}`} onClick={handleOpen}>
+    <div className={`item ${isOpen ? "open" : null}`} onClick={handleOpen}>
       <p className="number">{num < 9 ? `0${num + 1}` : num + 1}</p>
       <p className="title">{title}</p>
-      <p className="icon">{onOpen ? "-" : "+"}</p>
-      {onOpen && <div className="content-box">{content}</div>}
+      <p className="icon">{isOpen ? "-" : "+"}</p>
+      {isOpen && <div className="content-box">{children}</div>}
     </div>
   );
 }
