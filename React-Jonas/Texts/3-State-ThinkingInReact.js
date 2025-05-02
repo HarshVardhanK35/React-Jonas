@@ -323,7 +323,7 @@ const [cart, setCart] = useState([
 { name: "Node.js Boot-camp", price: 14.99
 ]);
 const [numItems, setNumItems] useState(2);
-const [totalPrice, setTotalPrice] = useSta haate(30.98);
+const [totalPrice, setTotalPrice] = useState(30.98);
  * 
  * - here,
  * - Three separate pieces of state, even though numItems and totalPrice depend on cart
@@ -345,6 +345,9 @@ const totalPrice = cart.reduce((acc, cur) acc + cur.price, 0)
  * - Works because re-rendering component will automatically re-calculate derived state
  * 
  * ! 7. Calculating Statistics as Derived State
+ * 
+ * - an example for Derived state was explained inside...  
+ *    - "TravelList"-A PracticeProject
  * 
  * ! 8. Children Props
  * 
