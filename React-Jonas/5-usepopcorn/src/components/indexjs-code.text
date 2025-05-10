@@ -1,0 +1,24 @@
+import { useState } from "react";
+
+import StarRating from "./components/StarRating";
+
+function Test() {
+  const [movieRating, setMovieRating] = useState(0);
+  return (
+    <>
+      <StarRating color="blue" size={36} maxRating={10} onSetRating={setMovieRating} />
+      <span>You rated this movie with {movieRating} stars</span>
+    </>
+  );
+}
+
+<StarRating
+    maxRating={5}
+    color="red"
+    size={30}
+    messages={["Terrible", "Bad", "Okay", "Good", "Amazing"]}
+/>
+
+<StarRating maxRating={10} size={32} defaultRating={2} color="black" />
+
+<Test />
