@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 function Modal({ children }) {
   return (
@@ -61,3 +61,27 @@ useEffect(
   },
   [title, userRating]
 );
+
+// let imdbRating;
+
+// const [isTop, setIsTop] = useState(imdbRating > 8);
+
+// useEffect(
+//   function () {
+//     setIsTop(imdbRating > 8);
+//   },
+//   [imdbRating]
+// );
+
+// const isTop = imdbRating > 8
+
+function useFetch(url) {
+  const [data, setData] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(function () {
+    fetch(url).then(res => res.json())
+      .then(res => setData(res))
+  }, []);
+  return [data, isLoading]
+}
