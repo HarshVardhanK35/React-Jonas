@@ -54,10 +54,10 @@
  *  - no state 
  *  - receive props and simply present received data or other content
  *  - usually small and re-usable
- * - ex: logo, web-app name etc., 
+ * - ex: logo, web-application name etc., 
  * 
  * >>> 2. Stateful Components
- *  - components that have state
+ *  - components which consists of state
  *  - can still be re-usable
  * 
  * >>> 3. Structural Components
@@ -78,11 +78,12 @@
  * 
  * ! 4. Component Composition
  * 
- * - before component composition, what happens when we include component inside another component in JSX!
+ * - before learning component composition, what happens when we include component inside another component in JSX!
  * 
  * - including components can be done in two ways
  * * 1. "USING" a component 
- * ex:
+ * - ex:
+ * -----
 function Modal() {
     return (
         <div className="modal">
@@ -94,14 +95,17 @@ function Success() {
     return <p>Well done!</p>
 }
  * 
- * - here success is tightly packed inside "Modal" component!
+ * - here "Success: A Component" is tightly packed inside "Modal" component!
  *      - here Modal is deeply connected with "Success" message and Modal can not be reused for some other messages! 
+ * 
  * - hence, this Modal is also called as "Success Modal" 
  *      - and it can not be re-used for displaying other messages
+ * 
  * - ex: for example, an "Error" message component can not be included into this "Modal" 
  * 
  * * 2. Component Composition
- * ex:
+ * - ex:
+ * -----
 function Modal({ children }) {
   return (
     <>
@@ -125,10 +129,15 @@ function Error() {
   <Error />
 </Modal>;
 
- * - this does not include a pre-defined component into it (tightly) but this accepts "children (keyword used to define props inside react!)"
+ * 
+ * - this does not include a pre-defined component into it (tightly) but this accepts "children"
+ *    - (children: keyword which used to define props inside react!)
+ * 
  * - we can pass the "Success" message into it between opening and closing tags of the modal.. which then be passed as a "children"
+ * 
  * - here is "Success" is passed into "Modal".. which do not hold it tightly!
  *      - so that we can pass another component such as "Error" message too.. which makes this "Modal" highly re-usable! 
+ * 
  * - so, other components are passed in as "children" prop into main "Modal" component!
  * 
  * >>> Combining different components using "children-props"
@@ -145,12 +154,13 @@ function Error() {
  * - we discussed that, for Component Composition..
  * - we can follow two ways
  * 
- * * 1. Children Props 
+ * * 1. children Props 
  *                  - (we completed Children Props!)
- * ex:
+ * - ex:
+ * -----
 // ----- Inserting an Element Between Re-usable Component ----- 
 
-<Box>                                   // >>> A re-usable component
+<Box>                                   
     <MovieList movies={movies} />       // >>> Inserted Element 
 </Box>                                  // >>> Wrapped with re-usable component
 
@@ -162,7 +172,7 @@ function Box({ children }) {            // >>> received element through "childre
       <button className="btn-toggle" onClick={() => setIsOpen((open) => !open)}>
         {isOpen ? "–" : "+"}
       </button>
-      {isOpen && children}              // >>> data passed upto here, rendering passed data
+      {isOpen && children}              // >>> data passed upto here, rendering passed data (component)
     </div>
   );
 }
@@ -179,7 +189,8 @@ function Box({ children }) {            // >>> received element through "childre
  * - But different syntax used here!
  * - Element is passed via "attributes" but not wrapped between the re-usable component!
  *  
- * ex:
+ * - ex:
+ * -----
 // >>> another component passed in here.. using props
 <Box element={<MovieList movies={movies} />} />
 
@@ -201,6 +212,33 @@ function Box({ element }) {         // >>> element will be received here!
  *  - 1. implicit children prop
  *  - 2. explicit element prop
  * 
+ * - ex:
+ * -----
+
+<Main>
+  // >>> explicit props: "element"
+  
+  // <Box element={<MovieList movies={movies} />} />
+  // <Box
+  //   element={                                          // >>> "element" prop name not "children"
+  //     <>
+  //       <WatchedSummary watched={watched} />
+  //       <WatchedMoviesList watched={watched} />        // >>> whenever explicit props are used >>> use the props name given while passing 
+  //     </>
+  //   }
+  // /> 
+
+  // >>> implicit props: "children" 
+  <Box>
+    {isLoading && <Loader />}
+    {!isLoading && !error && (
+      <MovieList movies={movies} onSelectMovie={handleSelectMovie} />
+    )}
+    {error && <ErrorMessage message={error} />}
+  </Box>
+</Main>
+ *
+ * 
  * ! 6. Building a Reusable Star Rating Component
  * 
  * - default props:
@@ -208,7 +246,8 @@ function Box({ element }) {         // >>> element will be received here!
  * 
  * - Creating a separate file to render.. "StarRating" component
  *
- * ex:
+ * - ex:
+ * -----
 // ----- creating & exporting StarRating Function -----
 export default function StarRating({ maxRating = 5 }) {         // >>> set a default parameter for a prop
   return (
@@ -258,7 +297,8 @@ export default function StarRating({ maxRating = 5 }) {         // >>> set a def
  * - in-order to decide a best API for a component..
  *    - maintain a right balance of props 
  * 
- * ex:
+ * - ex:
+ * -----
 // --- StarRating.js File ---
 import { useState } from "react";
 
@@ -392,7 +432,8 @@ root.render(
  * - 3. when we need "rating" outside the component
  *    - we passed the external component to get access to internal state!
  *   
- * ex: 
+ * - ex:
+ * ----- 
  * - the last and final component with all props given is:
 
 // --- StarRating.js ---
@@ -556,7 +597,8 @@ root.render(
  * - this type of declaring types is needed only when we have highly flexible and reusable component.. 
  * * use TYPESCRIPT when we are strict in implementing the types of props  
  * 
- * ex:
+ * - ex:
+ * -----
 import { useState } from "react";
 import PropTypes from "prop-types"      // >>> importing "PropTypes"
 

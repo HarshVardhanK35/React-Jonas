@@ -9,7 +9,6 @@
  *      - 2. Build a static React (without "State")
  *      - 3. think about state >>> when to use || types of state: local/global || where to place each piece of state 
  *      - 4. establishing the data flow through out the application >>> one-way data flow || child-parent communication || accessing global state
- *      - 5. 
  * 
  * - the processes 3 and 4 are for "State Management" 
  * 
@@ -36,45 +35,49 @@
  * 
  * >>> 2. Global State / Shared state:
  * - state that is accessed by each and every component in an application (if they need access!)
+ * 
  * - when declared as global then that piece of state is accessible by every component of that application 
  *      - shared between every component so, it is called //=> shared state
- * ? in practice we define react's global state using react's - CONTEXT API and or an external tool: REDUX
  * 
- * => WHEN and WHERE 
- * - when to create state and where to place the created state!
+ * * in practice we define react's global state using: react's - "CONTEXT API" or an external tool - "REDUX"
  * 
+ * ? when to create state and where to place the created state?
  * >>> WHEN: 
- * - ask: created when we need to store data -> will this state change?
+ * - ASK: when we need to store data then create a state 
+ *    - ASK: will this data change?
  *      - if no, have a regular constant variable
  * -----
- *  - if yes, is it possible to compute data using existing state/props? 
- *      - then derive the state!
+ *      - if yes, ASK: is it possible to compute data using existing state/props? 
+ *        - then derive the state!
  * => DERIVING STATE: 
- *      - calculating based on existing state/prop
+ *      - calculating based on existing state / prop !!!
  * 
- * - ask: deriving the state -> need to re-render the application?
- *      - if no, there is "ref" >>> which persists data over time like regular state but does not re-render a state!
+ * - ASK: will app need to re-render the application, when state got derived?
+ *      - if no, use a "ref" >>> which persists data over the time like regular state but does not cause a re-render!
  * -----
- *  - if yes, use a piece of state using useState() hook and use it inside a component (wherever it is needed!) >>> always use "LOCAL STATE GUIDELINES"
+ *      - if yes, use a piece of state using useState() hook and use it inside a component (wherever it is needed!) >>> always use "LOCAL STATE GUIDELINES"
  * 
  * >>> WHERE:
  * - where to use that created piece of state
  *      - if that state declared inside a component, leave it inside of it!
  *      - if that needed by child component, send it from Parent using PROPS!
  * 
- * - if that state is needed one or few sibling components or even for a parent component of a particular/specific current component
- *  - then move that state to it's common parent component this is called //=> Lifting Up STATE
+ * - if a component's state is needed by one or few of it's sibling components (or) even by it's parent component 
+ *    - then move that state to it's common parent component this is called //=> Lifting Up STATE
  * 
  * ! 3. Thinking About State and Lifting State Up
  * 
  * $ NOTE:
- * - whenever a new state depends upon the current state, use a "callback function"
- * - in react, we can mutate the existing state.. so we can use either .slice() or [...] spread operator to copy the original array
+ * - whenever a new state depends upon the current state, use a "callback function" >>> that is whenever we want to update the state based on it's current state
+ * 
+ * - in react, we cannot mutate the existing state (type: Array).. 
+ *    - so we can use either .slice() or [...] spread operator to copy the original array
  * 
  * >>> Lifting state up:
- * - whenever siblings want to share the same state, we lift the state to it's common parent component!
+ * - whenever siblings want to share the same state, we lift the state to it's // => common parent component!
+ * 
  * - so, after lifting the state to the common parent, the state variable can be passed to the both children through props
- * - (the state-setter function can also be shared via props)
+ *    - (the state-setter function can also be shared via props)
  * 
  * $ Note:
  * - if a child wants to set new state or update the existing state, as the state lies inside the common parent...
@@ -83,12 +86,13 @@
  * 
  * $ Note:
  * - whenever we update the state using passed state-setter function from the child, 
- *      - then updated state will be transferred from child to parent (that is data "flowing" up) 
+ *    - then updated state will be transferred from child to parent (that is called // => data "flowing" up / "inverse" data flow)
  * 
  * => inverse data flow:
- * - child to parent data transfer, this is called //=> "inverse data flow"
- *      - (happens after updating state using setState function)
- * - as this inverse flow does not happen inside react >>> cause data flow only from parent to child
+ * - child to parent data transfer
+ *      - (happens after updating state using setState function from the child when state was at parent)
+ * 
+ * - as this inverse flow does not happen inside react >>> cause data flows only from PARENT to CHILD
  * 
  * - ex: CHECKOUT(parent) - TOTAL(child-1) and PROMOTIONS(child-2)  
  *      - coupons and setCoupons data is flowed from parent to child via props
@@ -96,18 +100,20 @@
  * 
  * - IN BELOW EXAMPLE,
  *      - ONLY LIFTING STATE EXPLAINED BUT NOT INVERSE DATA FLOW! 
- * ex:
+ * - ex:
+ * -----
 function App() {
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState([]);       // >>> "items" state is lifted up >>> placed inside App() comp.
+
   function handleAddItems(item) {
-    setItems((items) => [...items, item]);
+    setItems((items) => [...items, item]);      // >>> this fn needs "items" state which was used inside "Form" comp.
   }
   return (
     <>
       <div className="app">
         <Logo />
         <Form onAddItems={handleAddItems} />
-        <PackingList items={items} />
+        <PackingList items={items} />           // >>> same "items" state is also needed inside "PackingList" comp.
         <Stats />
       </div>
     </>
@@ -184,9 +190,10 @@ function Item({ item }) {
  * ! 4. Deleting an Item: More Child-to-Parent Communication!
  * 
  * - here Child-Parent communication was demonstrated with an example!
- * ex:
-
-function App() {
+ * - ex:
+ * -----
+function
+----- App() {
   const [items, setItems] = useState([]);
 
   function handleAddItems(item) {
@@ -194,7 +201,7 @@ function App() {
   }
 
   function handleDelete(id) {
-    setItems((items) => items.filter((item) => item.id !== id));    //>>> changes the existing array
+    setItems((items) => items.filter((item) => item.id !== id));    // >>> changes the existing array
   }
 
   return (
@@ -202,7 +209,7 @@ function App() {
       <div className="app">
         <Logo />
         <Form onAddItems={handleAddItems} />
-        <PackingList items={items} onDeleteItems={handleDelete} />      //>>> function: handleDelete is passed via props
+        <PackingList items={items} onDeleteItems={handleDelete} />      // >>> function: handleDelete is passed via props to child: "PackingList" comp.
         <Stats />
       </div>
     </>
@@ -214,7 +221,7 @@ function PackingList({ items, onDeleteItems }) {
     <div className="list">
       <ul>
         {items.map((item) => {
-          return <Item key={item.id} item={item} onDeleteItems={onDeleteItems}/>;   //>>> function is passed again cause "PackingList" comp is dependent on "Item" comp
+          return <Item key={item.id} item={item} onDeleteItems={onDeleteItems}/>;   // >>> fn passed again cause "PackingList" comp is dependent on "Item" comp ("prop drilling")
         })}
       </ul>
     </div>
@@ -226,7 +233,7 @@ function Item({ item, onDeleteItems }) {
       <span style={item.packed ? { textDecoration: "line-through" } : {}}>
         {item.quantity} {item.description}
       </span>
-      <button onClick={() => {onDeleteItems(item.id)}}>❌</button>      //>>> functional - deletion operation (clicking on it updates the newItems- state)
+      <button onClick={() => {onDeleteItems(item.id)}}>❌</button>      // >>> event - fires off: deletion operation (clicking on it updates the "items"- state)
     </li>
   );
 }
@@ -235,14 +242,15 @@ function Item({ item, onDeleteItems }) {
  * 
  * - on checking the box, strike through the item
  * 
- * ex:
+ * - ex:
+ * -----
 function App() {
   const [items, setItems] = useState([]);
 
   function handleToggleItem(id) {     
     setItems((items) => {
       return items.map((item) => {
-        return item.id === id ? { ...item, packed: !item.packed } : {...item};    //>>> checking with ID and updating the existing item with respective ID
+        return item.id === id ? { ...item, packed: !item.packed } : {...item};      // >>> checking with ID and updating the existing item with respective ID
       });
     });
   }
@@ -254,14 +262,14 @@ function App() {
         <PackingList
           items={items}
           onDeleteItems={handleDelete}
-          onUpdateItem={handleToggleItem}   //>>> sending the "handleToggleItem" function as props
+          onUpdateItem={handleToggleItem}     // >>> sending the "handleToggleItem" function as props
         />
         <Stats />
       </div>
     </>
   );
 }
-function PackingList({ items, onDeleteItems, onUpdateItem }) {    //>>> receiving as props
+function PackingList({ items, onDeleteItems, onUpdateItem }) {      // >>> receiving as props
   return (
     <div className="list">
       <ul>
@@ -271,7 +279,7 @@ function PackingList({ items, onDeleteItems, onUpdateItem }) {    //>>> receivin
               key={item.id}
               item={item}
               onDeleteItems={onDeleteItems}
-              onUpdateItem={onUpdateItem}     //>>> sending the function to the "item" as props
+              onUpdateItem={onUpdateItem}     // >>> sending the function to the "item" as props
             />
           );
         })}
@@ -279,14 +287,14 @@ function PackingList({ items, onDeleteItems, onUpdateItem }) {    //>>> receivin
     </div>
   );
 }
-function Item({ item, onDeleteItems, onUpdateItem }) {    //>>> receiving again as props
+function Item({ item, onDeleteItems, onUpdateItem }) {      // >>> receiving again as props
   return (
     <li>
       <input
         type="checkbox"
         value={item.packed}
         onChange={() => {
-          onUpdateItem(item.id);    //>>> using the received function via props
+          onUpdateItem(item.id);      // >>> using the received function via props
         }}
       />
       <span style={item.packed ? { textDecoration: "line-through" } : {}}>
@@ -307,7 +315,7 @@ function Item({ item, onDeleteItems, onUpdateItem }) {    //>>> receiving again 
 function handleToggleItem(id) {     
   setItems((items) => {
     return items.map((item) => {
-      return item.id === id ? { ...item, packed: !item.packed } : {...item};    //>>> checking with ID and updating the existing item with respective ID
+      return item.id === id ? { ...item, packed: !item.packed } : {...item};      // >>> checking with ID and updating the existing item with respective ID
     });
   });
 }
@@ -317,12 +325,13 @@ function handleToggleItem(id) {
  * ! 6. Derived State
  * >>> state that is computed from an existing piece of state or from props
  * 
- * eX: 
+ * - ex:
+ * ----- 
 const [cart, setCart] = useState([
 { name: "JavaScript Course", price: 15.99
 { name: "Node.js Boot-camp", price: 14.99
 ]);
-const [numItems, setNumItems] useState(2);
+const [numItems, setNumItems] = useState(2);
 const [totalPrice, setTotalPrice] = useState(30.98);
  * 
  * - here,
@@ -332,8 +341,9 @@ const [totalPrice, setTotalPrice] = useState(30.98);
  * 
  * * Derived State:
  * - instead of creating three separate states.. we can create a derived state (derived from a single and existing state)
- * ex:
-const [cart setCart] = useState([
+ * - ex:- 
+cons-----t [cart
+----- setCart] = useState([
   { name: "JavaScript Course", price: 15.99}, 
   { name: "Node.js Bootcamp", price: 14.99 },
 ]);
@@ -353,9 +363,10 @@ const totalPrice = cart.reduce((acc, cur) acc + cur.price, 0)
  * 
  * - the props that are passed in between opening and closing re-usable components are called "children props"
  *    - these props are passed with in-built react keyword "children"
- * ex:
-
-function App() {
+ * - ex:- 
+-----
+function
+----- App() {
   const [step, setStep] = useState(1);
   const [isOpen, setIsOpen] = useState(true);
 
@@ -393,13 +404,13 @@ function App() {
           </p>
 
           <div className="buttons ">
-            <Button                       //>>> opening tag
+            <Button                           // >>> opening tag
               bgColor={"#7950f2"}
               txtColor={"#fff"}
               onClick={handlePrevious}
             >
-              <span>👈</span> Previous    //>>> The content is passed as "children"
-            </Button>                     //>>> closing tag
+              <span>👈</span> Previous                // >>> The content is passed as "children"
+            </Button>                         // >>> closing tag
             <Button bgColor={"#7950f2"} txtColor={"#fff"} onClick={handleNext}>
               Next <span>👉</span>
             </Button>
@@ -410,13 +421,13 @@ function App() {
   );
 }
 
-function Button({ bgColor, txtColor, onClick, children }) {   //>>> received as "children" props
+function Button({ bgColor, txtColor, onClick, children }) {   // >>> received as "children" props
   return (
     <button
       style={{ backgroundColor: bgColor, color: txtColor }}
       onClick={onClick}
     >
-      {children}      //>>> "children" used props
+      {children}      // >>> "children" used props
     </button>
   );
 } 

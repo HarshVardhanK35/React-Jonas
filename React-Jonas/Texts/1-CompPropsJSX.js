@@ -2,13 +2,13 @@
 /**
  * ! 1. Components as Building Blocks
  * - react apps are made up of components, components are building blocks of web-applications!
- *      - nesting components is the best way of use components, along with re-usability of components
+ *      - nesting components is the best way of use components, along with reusability of components
  * 
- * - we can re-use differ components and we can use differ data for every component!
+ * - we can reuse different components and we can use differ data for every component!
  *      - using "PROPS"!
  * 
- * - Components shall be functions, and functions must start with "Upper_Case"!
- *      - these functional components must "return" > a renderable markup!
+ * - Component must and should be a function, and function names must start with "Upper_Case"!
+ *      - these functional components must "return" > a renderable markup >>> that is JSX
  * 
  * - |  COMPONENTS  | => |     DATA      +      LOGIC     +   APPEARANCE  |
  * - Components = Data + Logic + Appearance
@@ -37,24 +37,24 @@ function Pizza(){
  * * JSX (JavaScript eXtension)
  * - the APPEARANCE inside COMPONENTS is JSX!
  * 
- * ? JSX: ~ Component's Appearance!
+ * ? JSX ~ Component's Appearance!
  * - declarative syntax to describe how components look like and how they work!
  *  
- * - which embeds / combines => JS, CSS, React components into HTML!
+ * - JSX: combines of => JS, CSS, and HTML!
  * 
- * - conversion of JSX to JavaScript is done with a tool called "Babel" 
+ * - conversion of JSX to JavaScript is done with a tool called //=> "Babel"
  *      - as browsers do not understand JSX so, behind the scenes code will be converted to JS  
  * 
  * * IMPERATIVE vs DECLARATIVE
  *  => Imperative: 
  * - where manual DOM manipulation is done with vanilla JS: "!!! DOM Manipulation !!!"
- *      - we tell the browser how to do manipulations, so this is hard and REACT comes handy replacing DOM Manipulation!
+ *      - we tell the browser how to manipulate, so this is hard and REACT comes handy replacing DOM Manipulation!
  * 
  *  => Declarative:
  * - describe how UI looks like with current data that this data is mostly : "props" and "state"
  *      - there will be no DOM manipulations... 
  *      - React is an abstraction >>> React takes care of DOM => behind the scenes
- *  - WE DON'T TOUCH DOM HERE! 
+ * * WE DON'T TOUCH DOM HERE! 
  * 
  * ! 3. Styling react applications
  * ? 1. inline styling: 
@@ -138,7 +138,7 @@ EX:
  * 
  * ! 7. Conditional rendering with &&
  * 
- * - returns 1st operand if it is true
+ * - returns 1st operand if 2nd operand is true
  * - returns last operand if all the operands are true!
  * 
  * *useCases

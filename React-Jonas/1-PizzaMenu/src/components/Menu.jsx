@@ -1,4 +1,4 @@
-import {pizzaData} from "../data.js"
+import { pizzaData } from "../data.js";
 
 function Menu() {
   return (
@@ -7,9 +7,7 @@ function Menu() {
       {pizzaData.length > 0 ? (
         <ul className="pizzas ">
           {pizzaData.map((pizza) => {
-            return (
-              <Pizza key={pizza.name} pizzaData={pizza} />
-            );
+            return <Pizza key={pizza.name} pizzaData={pizza} />;
           })}
         </ul>
       ) : (
@@ -45,4 +43,4 @@ function Pizza({ pizzaData }) {
   );
 }
 
-export default Menu
+export default Menu;

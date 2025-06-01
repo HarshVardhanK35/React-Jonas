@@ -3,10 +3,11 @@
  * ! 1. The Component Lifecycle
  * 
  * - only component instances have life-cycles! 
- * - what does actually life-cycle mean?
+ * 
+ * ? what does actually life-cycle mean?
  *      - different phases that a specific component instance can go through over time 
  * 
- * - those different phases are:
+ * ? those different phases are:
  *  
  * * Mount / Initial render
  * - where a specific component is rendered for a very 1st time 
@@ -24,11 +25,11 @@
  * 
  * * UnMounted
  * - when there is no need of a component, then that component is un-mounted 
- * - where a component destroyed and removed from the UI (that means component dies)
+ * - where a component "destroyed" or "removed" from the UI (that means component dies)
  * - component is destroyed, along with it's state and props
  * 
  * >>> important to know, cause we can hook through different phases of this life-cycle
- *      - that is we can define code like that it only executes only at specific points in time
+ *      - that is we can define code.. so that it only executes only at specific points in time
  * 
  * => "useEffect" hook is helpful in doing so... 
  * 
@@ -89,17 +90,18 @@ export default function App() {
  * - Fetch "URL" code:
 fetch(`http://www.omdbapi.com/?apikey=${KEY}&s=interstellar`)
 .then((res) => {
-    return res.json();
+    return res.json();    // >>> res.json() converts response into json object... this also returns a promise
 })
 .then((data) => {
-    console.log(data);
+    console.log(data);    // >>> as res.json() returns a promise, .then() has to be applied again!
 }); 
  * 
- * - when we use this code inside "render-logic" this will create a "Side-Effects inside an app!" 
+ * - when we use this code inside "render-logic", inturn creates "Side-Effects" inside that application!
  * - this shall not be allowed inside render-logic!
  * 
  * ? what if we 'set' data that is coming from 'fetch' function, which is a Side-Effect and has to be avoided! 
  * 
+ * - we don't get any problem/error.. until we log data to console, but we get errors if we set that data to a useState variable via "setter fn"
  * - Fetch data is set to "setMovies"
 const [movies, setMovies] = useState([]);
 const [watched, setWatched] = useState(tempWatchedData);
@@ -136,7 +138,7 @@ fetch(`http://www.omdbapi.com/?apikey=${KEY}&s=interstellar`)
  * - ex: only write after initial render
  * 
  * * useEffect in practical use-vase:
- * 
+ * -----------------------------------
  * >>> import: 
  * - import {useEffect} from 'react';
  * 
@@ -166,12 +168,12 @@ useEffect(function (params) {
  * >>> what does registering side-effect mean?
  * - basically running the code... 
 fetch(`http://www.omdbapi.com/?apikey=${KEY}&s=interstellar`)
-.then((res) => {
-  return res.json();
-})
-.then((data) => {
-  setMovies(data.Search);
-});
+  .then((res) => {
+    return res.json();
+  })
+  .then((data) => {
+    setMovies(data.Search);
+  });
  * - not to run the registered code, when component renders but actually after component has been painted onto the screen --- this is what useEffect does!
  * 
  * - but while before code was executed while component was rendering or while the function was being executed! 
@@ -187,8 +189,15 @@ fetch(`http://www.omdbapi.com/?apikey=${KEY}&s=interstellar`)
  * 
  * - so, we need side-effects when we build react apps but not inside render-logic!
  * 
- * - so side effects can be made in
- * 
+ * - so side effects can be made in...
+ *    #1 event handlers => 
+ *        - when a certain EVENT TRIGGERS
+ *    #2 mounting => 
+ *        - while mounting / initial rendering of an app! 
+ *        - while also different stages of component instance life-cycle => (MOUNTING, RE-RENDERING, UNMOUNTING)
+ *        
+ * - the effect will be executed only at different stages of component life-cycles based on the dependency array and it's elements
+ *  
  * ? 1. event handlers:
  * - functions that are triggered whenever the events that they are listening to happens!
  * - ex: onClick, onSubmit etc., 
@@ -251,13 +260,21 @@ useEffect(function (params) {
  *  
  * $ Conclusion:
  * - event handlers:    we use these to react to certain events happens in UI
- * - effects:           we keep code sync with external world!
+ * - effects:           we keep code sync with external API!
  * 
  * * IMPORTANT:
  * - Event-Handlers are preferred way to create side effects
  * 
- * ! 5. Using an async Function
+ * ex:
+ * ---
+// this has to be executed at a certain point of time!
+useEffect(function () {
+  fetch(`http://www.omdbapi.com/?apikey=${KEY}&s=interstellar`)
+    .then((res) => res.json())
+    .then((data) => setMovies(data.Search));
+}, []);
  * 
+ * ! 5. Using an async Function
  * - let's now convert useEffects to async function
  * 
  * * async function syntax:
@@ -295,7 +312,7 @@ useEffect(() => {
     const data = await res.json();
     setMovies(data.Search);
     
-    console.log(movies)         //>>> tried to log movies data that was fetched- returned: [] 
+    console.log(movies)         //>>> tried to log movies data here- but returned: [] => an empty array 
     console.log(data.Search);
   }
   fetchMovies();
@@ -303,6 +320,11 @@ useEffect(() => {
  * 
  * - when movies data was fetched in middle of the useEffect hook in the above example,
  *    - which returned an empty array []
+ * 
+ * - when we "console.log(movies)" even after setting state with: "setMovies(data.Search)" => we've got an empty array 
+ *    - empty array was logged, even after setting state 
+ *
+ * - we had "Stale-State" that is initial state cause of    
  * 
  * - cause we have stale state! as setting state is "asynchronous"
  *    - that is setting state does not happen immediately: "setMovies(data.Search)"
@@ -780,8 +802,10 @@ useEffect(
 useEffect(
   function () {
     const controller = new AbortController();     //>>> to prevent the "race condition"
+    
     setIsLoading(true);
     setError("");
+    
     async function fetchMovies() {
       try {
         const res = await fetch(
@@ -813,7 +837,9 @@ useEffect(
       setIsLoading(false);
       return;
     }
+    
     fetchMovies();
+    
     return function () {      //>>> cancel the fetch req for strings other than last and complete movie name: "inception (last)"
       controller.abort();   
     };

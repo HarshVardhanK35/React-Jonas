@@ -1,6 +1,6 @@
 function Footer() {
   const hour = new Date().getHours();
-  console.log(hour)
+  // console.log(hour);
 
   const openHour = 5;
   const closeHour = 22;
@@ -33,4 +33,4 @@ function Order({ openHour, closeHour }) {
   );
 }
 
-export default Footer
+export default Footer;

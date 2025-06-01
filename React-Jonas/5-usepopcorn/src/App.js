@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+
 import StarRating from "./components/StarRating";
 import { useMovies } from "./components/useMovies";
 import { useLocalStorageState } from "./components/useLocalStorageState";
@@ -7,12 +8,19 @@ import { useKey } from "./components/useKey";
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
+// below code does not work!
 // const average = (arr) => {
 //   return (
 //     arr.reduce((acc, curValue, index, arr) => {
 //       return acc + curValue;
 //     }, 0) / arr.length
 //   );
+// };
+
+// actual replica: "average"-function
+// const average = (arr) => {
+//   const sum = arr.reduce((acc, cur) => acc + cur, 0); 
+//   return sum / arr.length;
 // };
 
 const KEY = "f84fc31d";
@@ -56,16 +64,6 @@ export default function App() {
       </NavBar>
 
       <Main>
-        {/* passed as a prop... an explicit prop!  */}
-        {/* <Box element={<MovieList movies={movies} />} />
-        <Box
-          element={
-            <>
-              <WatchedSummary watched={watched} />
-              <WatchedMoviesList watched={watched} />
-            </>
-          }
-        /> */}
         <Box>
           {isLoading && <Loader />}
           {!isLoading && !error && (

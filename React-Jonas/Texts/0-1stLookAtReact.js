@@ -19,7 +19,6 @@
  * * JSX:
  * - use JSX syntax, which is a combination of HTML, JS, CSS
  * 
- * 
  * * State:
  * - data that changes every minute, so React reacts to state/data change and re-renders the UI
  * 
