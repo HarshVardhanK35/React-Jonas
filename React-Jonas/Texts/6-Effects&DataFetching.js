@@ -573,7 +573,7 @@ useEffect(
  * - if not passed, then react will not know whether "prop" and "state-function" has changed or not!
  *    - then react won't be able to re-execute this function on change of these passed variable and state-function
  * 
- * - this lead to a bug called: "!!! STATE CLOSURE !!!"
+ * - this lead to a bug called: "!!! STALE CLOSURE !!!"
  * 
  * 
  * * Why this array is so important for useEffect Hook?
@@ -617,34 +617,36 @@ useEffect(
  * 
  * * when are effects executed?
  * -----
- * - whole process.. 
- * #1  
- * -? MOUNTING: (initial render) 
- * -> COMMIT: committed to dom (results of rendering) 
- * -> BROWSER PAINTING: (dom changes are painted browser)
- * #2
- * - EFFECTS: (effects are executed after the browser painting is done, effects are asynchronous! >>> cause effects may contain fetching and they are long running processes!)
- * 
- * $ Note:
- * - effects do not run during the render process, cause if an effect sets a state, then a 2nd additional render is needed to display UI correctly
- * 
- * #3
- * - if prop changes 
- * -> RE-RENDER (component instance renders again) 
- * -> COMMIT (dom changes again committed) 
- * -> (??? LAYOUT EFFECT ???) 
- * -> BROWSER PAINT 
- * -> (?___?)
- * -> EFFECTS execution (as props are the part of dependency array, effects are executed again)
- * -> UNMOUNTS (component gets unmounted)  
- * -> (?___?)
+ * - A timeline
+ * - whole process of execution..  
+ * #01 MOUNTING          (initial render) 
+ * #02 COMMIT            (committed to dom) (results of rendering) 
+ * #03 BROWSER PAINTING  (dom changes are painted browser)
+ * #04 useEFFECT
+ * >>> if any props changes...
+ * #05 RE-RENDER         (component instance renders again) 
+ * #06 COMMIT            (dom changes again committed)
+ * #07 (??? LAYOUT EFFECT ???)     (Not needed)
+ * #08 BROWSER PAINT 
+ * #09 _(BLANK-PROCESS)_
+ * #10 EFFECTS execution 
+ * - (as props are the part of dependency array, effects are executed again)
+ * #11 UNMOUNTS         (component gets unmounted)  
+ * #12 _(BLANK-PROCESS)_
  *
+ * $ Note:
+ * - effects has to be executed after component instance painted to the browser or screen (cause of effects run asynchronously)
+ *    - as effects are long-running processes cause they have to fetch data
+ *
+ * - if effects executed before browser paints new screen.. this could block the entire process 
+ *    - users see the older version of screen   
+ * 
  * - the above process runs again and again, until component instance UNMOUNTS and disappears from the screen / UI
  * 
  * >>> LAYOUT EFFECT:
  * - this is rarely required, this runs before the BROWSER PAINTS to the UI
  * 
- * ! Adding a new effect: changing a page title
+ * ! 9. Adding a new effect: changing a page title
  * used:
 useEffect(function () { 
   if (!title) return;
@@ -657,34 +659,34 @@ useEffect(function () {
  * - whenever user clicks "back" button the document.title have to set to default that is "usePopcorn"... but this is'nt happening
  *    - solved / covered in next lecture ⬇️
  * 
- * ! The useEffect Cleanup Function
+ * ! 10. The useEffect Cleanup Function
  * 
  * - the 3rd part of an effect is a clean-up function
  * - previous timeline:
- * #1 MOUNT             > (initial render)
- * #2 COMMIT            > (commit to DOM -> results of rendering)
- * #3 BROWSER PAINTING  > (DOM changes are painted to UI / screen)
- * #4 EFFECT            > effects are executed -> after browser painting!
+ * #01 MOUNT             > (initial render)
+ * #02 COMMIT            > (commit to DOM -> results of rendering)
+ * #03 BROWSER PAINTING  > (DOM changes are painted to UI / screen)
+ * #04 EFFECT            > effects are executed -> after browser painting!
  * - !!! if prop changes !!!
- * #5 RE-RENDER
- * #6 COMMIT
- * $7 "LAYOUT EFFECT"
- * #8 BROWSER PAINT
- * #9 {} => CLEANUP FUNCTION
- * #0 EFFECT
+ * #05 RE-RENDER
+ * #06 COMMIT
+ * $07 "LAYOUT EFFECT"
+ * #08 BROWSER PAINT
+ * #09 _BLANK_ => CLEANUP FUNCTION
+ * #10 EFFECT
  * - process from (#5 to #0) continues until the present component life-cycle unmounts / dies
- * #1 UNMOUNTING
- * #2 {} => CLEANUP FUNCTION
+ * #11 UNMOUNTING
+ * #12 _BLANK_ => CLEANUP FUNCTION
  * 
  * ? problem discussion:
  * - whenever movie was selected, document's title was set to movie's title
- *  - once movie was unmounted that is on-clicking back button document title has to be set on-default "usePopcorn (name of the application)"
+ *    - once movie was unmounted that is on-clicking back button document title has to be set on-default "usePopcorn (name of the application)"
  * 
  * ? how do we do that? 
  * ? how the page title can be synchronized with the application, even after the selected movie-component was disappeared?
  * >>> sol:
  * - execute a code after the component unmounts
- *    - achieved through returning so-called "cleanup function" from the effect
+ *    - achieved through returning a "cleanup function" from the effect
  * 
  * - a function that sets the title back to "usePopcorn" 
  *    - the gaps in the timeline were filled back with "CLEANUP FUNCTION"
@@ -702,6 +704,12 @@ useEffect(function () {
  * $ remember:
  * - we have dependency array, which helps in running effect whenever the comp inst mounts / initially render and also on re-renders
  * 
+ * >>> we have dependency array, whenever a component instance renders
+ * * we have also a way to run some code after a component UNMOUNTS >>> with CLEANUP FUNCTION
+ * 
+ * >>> CLEAN-UP FUNCTION
+ * - necessary whenever side effects keeps happening after the component has been re-rendered or unmounted
+ * 
  * $ imp:
  * - so, now we have "CLEANUP-FUNCTION" that runs some code whenever the component unmounts
  *    => therefore, with this we have entire component-life-cycle covered!
@@ -710,7 +718,7 @@ useEffect(function () {
  *  - whenever side-effect keeps happening after the comp has been re-rendered or unmounted
  * 
  * - ex: in the case of HTTP req., running a req. inside an effect 
- *    - if the comp is re-rendered while the 1st is still running >>> then a new 2nd req would be fired off
+ *    - if the comp is re-rendered while the 1st req. is still running >>> then a new 2nd req. would be fired off
  *    - this creates a bug >>> "RACE-CONDITION"
  * - therefore it is best to cancel the request in a cleanup function >>> whenever the comp re-renders or unmounts
  * 
@@ -724,7 +732,7 @@ useEffect(function () {
  *    - this makes effects easier to clean-up
  *    - also makes it easier to understand!
  * 
- * ! Cleaning Up the Title
+ * ! 11. Cleaning Up the Title
  * 
  * - to clean up we have to return a function from an effect
  * ex:
@@ -772,12 +780,15 @@ useEffect(
   [title]
 );
  * 
+ * >>> therefore, clean-up functions runs between renders basically after each re-render
+ * 
+ * 
  * >>> how can the clean-up fn remembers?
  *    * CLOSURE
  * - imp concept in JS, that a fn will always remembers all variables that were present and the place that the function was created >>>
  *    - even after function execution was completed 
  * 
- * ! Cleaning Up Data Fetching
+ * ! 12. Cleaning Up Data Fetching
  * 
  * - whenever we search for a movie (string) the fetch request is being made for every key stroke that is for every character
  * 
@@ -786,15 +797,15 @@ useEffect(
  *    -ex: "in", "inc", "ince", "incep" etc.,
  * 
  * #2 so data is being fetched and stored in state for every character that we enter... but we don't need that previous word's data! 
- *  - we only need "inception (last one)" data not "inceptio (other)"!
+ *  - we only need "inception (last one)" data but not "inceptio (or others)"!
  * 
  * - if other pieces of movie string take more time than the complete string, then that one will become the result that will be rendered on UI
  *    - common problem //=> Race condition
  *    - all the other pieces are racing with one another!
  *  
- * ? now we are gonna learn, as soon as the new request fired off.. the previous request has to stop (canceled) 
+ * ? now we are gonna learn, (how to) as soon as the new request fired off.. the previous request has to be stopped (canceled) 
  * >>> we solve this using native browser API: //=> Abort Controller
- *    - we use this in our clean-up function
+ *    - we use this in our "clean-up function"
  * 
  * $ Note: 
  * - just know where and when to use, need not to know the working of this abort controller!
@@ -810,7 +821,7 @@ useEffect(
       try {
         const res = await fetch(
           `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`,
-          { signal: controller.signal }
+          { signal: controller.signal }                             // >>> connecting abort controller with fetch request!
         );
         if (!res.ok)
           throw new Error("Something went wrong while fetching movies!!!");
@@ -847,6 +858,17 @@ useEffect(
   [query]
 );
  * 
+ * $ steps to be followed:
+ * #1 create a "controller" variable and store the object that was returned from "new AbortController()"
+ * 
+ * #2 connection of abort controller with fetch() req. 
+ * ex:
+const res = await fetch(
+  `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`,
+  { signal: controller.signal }                       // >>> connected here!
+);
+ * 
+ * 
  * - after using abort controller, we can observe that one request can happen at a time, until it gets cancelled by the next character! 
  * - ex: "i", cancelled by "in" and "in" cancelled by "inc"
  * 
@@ -860,13 +882,15 @@ useEffect(
  * 
  * - we want to cancel the current request each time that a new request for new string comes in >>> that is the exact point >>> clean-up function gets executed
  * 
+//>>> cancel the fetch req for strings other than last and complete movie name: "inception (last)"
 fetchMovies();
-return function () {      //>>> cancel the fetch req for strings other than last and complete movie name: "inception (last)"
-  controller.abort();   
-};
+  return function () {      
+    controller.abort();   
+  };
+...
  * 
- * - but JS sees that as an error, each time when a fetch req cancelled >>> so we get an error!
- * >>> for the above condition we write a code using "err.name" to ignore "AbortError">>>
+ * - but JS sees that as an error, each time when a fetch req cancelled >>> so we get an error => each time when a fetch req has been cancelled
+ * >>> so, we write a snippet using "err.name" to ignore "AbortError">>>
  * 
 catch (err) {
   if (err.name !== "AbortError") {    //>>> ignore the "AbortError" caused: when fetch req is cancelled!
@@ -874,9 +898,9 @@ catch (err) {
   }
   console.error(err.message);
 } 
-finally ...
+finally {...}
  * 
- * ! One More Effect: Listening to a Keypress (Globally)
+ * ! 13. One More Effect: Listening to a Keypress (Globally)
  * 
  * - after selecting a movie, movie details box will open and can press "back" button to go-back >>> but we can also press "escape" key to go-back
  * 
@@ -905,26 +929,88 @@ useEffect(function() {
  * - whenever we press "Escape" the useEffect runs >>> even after the movie was closed! this may be a problem
  * >>> so move this entire useEffect into "MovieDetails" component >>> before useEffect already there for fetching individual movie details
  * 
- * - after movie, ESLINT will complain that there is wrong with dependency array and that array need values!
- * - therefore, include close fn into that dependency array!
+ * - ESLINT will complain that there is wrong with dependency array and that array need values!
+ * - therefore, include close-movie ("onCloseMovieDetails") function into that dependency array as an element!
  * 
  * ? But why we should include a function inside of that dependency array?
- * >>>
+ * >>> ASK: CHATGPT (or) WE WILL LEARN LATER IN THE COURSE !
  * 
- * ? again a problem !!!
- * ? even a movie is closed onclick of "esc" and again opened another movie and closed with same "esc" then the function runs and continues (check with logging out to console on every click)
+ * ex:
+ * ---
+// Globally: listen to "Escape" key
+useEffect(
+  function () {
+    document.addEventListener("keydown", (e) => {
+      if (e.code === "Escape") {
+        onCloseMovieDetails();
+        console.log("CLOSING")      // >>> main imp thing to notice
+      }
+    });
+  },
+  [onCloseMovieDetails]   // >>> inserting the function inside dependency array
+);
+ * 
+ * * function inside dependency array? we'll learn about this after some-time
+ * 
+ * - we inserted this above useEffect inside total application, but we have to listen (as useEffect is an event-listener) only when "MovieDetails" component instance renders
+ * 
+ * - so, insert this above useEffect into "MovieDetails" function! 
+ * 
+ * ? again a problem !
+ * -------------------
+ * ? even a movie is closed onclick of "esc" and again opened another movie and closed with same "esc" then the function runs and continues 
+ * - (check with logging out "CLOSING" to console on every click)
+ * 
  * ? what is happening >>> each time a new movie details comp inst renders a new event-listener attaches to document (with the previous one we already had).. that is why the fun result gets accumulated!
+ * 
  * >>> sol:
  * - we need to clean-up the event listener, so return a function again from the effect >>> which removes the previous event-listener on every re-render!
  * 
  * * when these event-listeners piles up on every re-render >>> which rise to a memory problem in a larger app!
  * 
+ * - so we use a clean-up fn to remove the event listener that was attached previously...
  * 
+ * ex:
+ * ---
+// Globally: listen to "Escape" key
+useEffect(
+  function () {
+    document.addEventListener("keydown", (e) => {
+      if (e.code === "Escape") {
+        onCloseMovieDetails();
+      }
+    });
+
+    return function () {
+      document.removeEventListener("keydown", (e) => {
+        if (e.code === "Escape") {
+          onCloseMovieDetails();
+        }
+      })
+    }
+  },
+  [onCloseMovieDetails]
+);
  * 
- * 
- * 
- * 
- * 
+ * - avoid repeating the code hence, use DRY principle...
+ * ex:
+ * ---
+// Globally: listen to "Escape" key
+useEffect(
+  function () {
+    function callback(e) {
+      if (e.code === "Escape") {
+        onCloseMovieDetails();
+      }
+    }
+    document.addEventListener("keydown", callback);
+    // clean-up
+    return function () {
+      document.removeEventListener("keydown", callback);
+    };
+  },
+  [onCloseMovieDetails]
+);
  * 
  * 
  * 

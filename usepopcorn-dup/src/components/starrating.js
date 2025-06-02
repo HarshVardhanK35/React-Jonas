@@ -15,18 +15,20 @@ function StarRating({
   color = "#fcc419",
   size = 18,
   messages = ["Terrible", "Bad", "Okay", "Good", "Amazing"],
+  onSetRating = 0,
 }) {
   const [rating, setRating] = useState(0);
   const [tempRating, setTempRating] = useState(0);
 
   function handleRating(rating) {
     setRating(rating);
+    onSetRating(rating)
   }
 
   const textStyle = {
     lineHeight: "1",
     margin: "0",
-    color: "#000",
+    color: "#fcc419",
     fontSize: `${size / 1.5}px`,
   };
 
