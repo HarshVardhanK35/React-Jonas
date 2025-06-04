@@ -7,17 +7,18 @@
  *  - Hooks are basically APIs which expose some internal react functionalities such as:
  *  >>> creating and accessing state from Fiber Tree
  *  >>> registering side-effects in the Fiber Tree
- *  >>> helps us to manually select DOM nodes 
+ *  >>> helps us to manually select DOM nodes (Manual DOM selections)
  *  >>> many more..
  * 
  * $ Note:
- * - as fiber tree is react deep internal mechanism, but with these useState and useEffect hooks we can hook into those mechanisms
+ * - as fiber tree is react's deep internal mechanism, but with these hooks (useState and useEffect hooks).. we can hook into those mechanisms
  * 
- * #2 all Hooks start with word: "use"
+ * #2 all Hooks start with word: "use" as prefix
  *  - this helps in distinguish hooks from other functions
  *  - we can also create our own custom hooks >>> with word as prefix "use"
  * 
- * #3 enables easy way of reusing non-visual logic: as we can compose multiple Hooks into our own "custom hook"
+ * #3 enables easy way of reusing non-visual logic: 
+ * - as we can compose multiple Hooks into our own "custom hook"
  * 
  * #4 provides function components ability to own state and run side-effects at different life-cycle points 
  *  - (this functionality is available only before - v16.8: where we use "class components")  
@@ -44,11 +45,12 @@
  * 
  * * RULES OF HOOKS:
  * #1 hooks can only be called at top-level 
- *  - in practice, these can not be called inside conditionals, loops, nested fns, or after an early return!
- *  - necessary to be called always in same order 
+ *  - in practice, these can not be called inside conditionals (if-statements), loops, nested fns, or after an early return!
+ *  - necessary to ensure that hooks are always to be called in "same order" 
  * 
  * #2 only call hooks from react functions
  *  - only call hooks inside a functional component or a custom hook (but not inside a reg fn or event class components)
+ *  - can only be called from function components or from custom hooks, but not from regular functions or even class components 
  * 
  * $ Note:
  * - when we use react's ESLint - then these rules are "automatically" enforced 
@@ -58,7 +60,7 @@
  * - whenever an app is rendered, 
  *  - react creates a react-element tree also called "VIRTUAL DOM", 
  *  - on initial render, react also builds a fiber tree >>> where each element is a fiber 
- *  - each fiber consists of => (received props, list of work) and * linked list of all the hooks *
+ *  - each fiber consists of => (received props, list of work) and (mainly) //=> linked list of all hooks
  * 
  * - Linked list of all hooks that we were used in component instance
  * ex:
@@ -68,8 +70,8 @@ if (A === 23) {
 }
 useEffect(fnC, [])                  // >>> (3)
  * 
- * >>> violates rule #1 
- * - this above example is "hypothetical" which will does not work >>> cause this conditionally defined "useState" hook
+ * >>> violates rule (2)
+ * - this above example is "hypothetical" which will does not work >>> cause this conditionally (inside a condition) defined "useState" hook
  * 
  * * LINKED LIST: 
  *  - linked list of used hooks 
@@ -78,17 +80,20 @@ useEffect(fnC, [])                  // >>> (3)
  *  - (so all the list elements are linked together !)
  * 
  * $ process: 
- * - whenever after a state-update >>> state-A was updated from 23 to some other number!
- * - initially, state-B was created with state-A is equal to 23 >>> but now it is "false"
- *      - now B's- useState will not be called! 
+ * - whenever after a state-update >>> 
+ *    - state-A (1) was updated from 23 to some other number!
+ * 
+ * - but state-B (2) was created with state-A (1) is equal to 23 >>> but now it is "false"
+ *    - now B's- useState will not be called! 
+ * 
  * - so, now state-B does not exist in this linked list of hooks after the render
- *      - as 1st hook still points to state-B >>> but now the link has been broken
- *      - now nothing is pointing to the last useEffect: fnC
+ *    - as 1st hook still points to state-B >>> but now the link has been broken
+ *    - now nothing is pointing to the last useEffect: (3)
  * 
  * - therefore, this means that linked-list has been broken
- *  - that's why hooks need to be called in same order, not inside the conditionals / loops / nested functions
+ *    - that's why hooks need to be called in same order, not inside the conditionals / loops / nested functions
  * 
- * $ Modified Hooks:
+ * $ Modified Solution:
 const [A, setA] = useState(23);
 const [B, setB] = useState("");
 useEffect(fnC, []);
@@ -101,7 +106,9 @@ useEffect(fnC, []);
  * - do not insert any conditionals in between of hooks,
  * - so each time declare the hooks in top of the functional component
  * 
- * ! 3. More Details of useState
+ * - do not put conditionals inn between the hooks that were created initially 
+ * 
+ * ! 3. More Details of "useState"
  * * Initial values that we pass into "useState" only really matter on the initial render 
  * 
  * - here, now we wanted a piece of state called "isTop" which has to be 'true' >>> if the "imdbRating" is greater than 8 
@@ -144,19 +151,13 @@ useEffect(
  * - if we wanted this functionality, we shall not use a piece of state at 1st and we shall have to use only "DERIVED STATE !" 
  * => use Derived State!
  * ex:
-----------
-// const [isTop, setIsTop] = useState(imdbRating > 8);
-// useEffect(
-//   function () {
-//     setIsTop(imdbRating > 8);
-//   },
-//   [imdbRating]
-// );
+ * ---
 // >>> derived state ! 
 const isTop = imdbRating > 8
  * 
  * >>> great advantage of "derived state"
- * >>> power of "DERIVED STATE" >>> where a variable gets re-generated each time the function is executed (or) component re-rendered 
+ * >>> power of "DERIVED STATE" 
+ * - where a variable gets re-generated each time the function is executed (or) component re-rendered 
  * 
  * 
 //* we cannot do this...
@@ -168,6 +169,8 @@ const isTop = imdbRating > 8
 // console.assert(isTop);
 // >>> whatever we pass-into useState("") is the initial state >>> react only look into this at initial render!
 
+// ? Solutions
+// -------------
 //* use 'useEffect' to fix this
 // useEffect(
 //   function () {
@@ -210,7 +213,6 @@ console.log(isTop)
  * >>> using event handler:
  * ex:
 // ----- inside function App() {...}
-// -----
 function handleAddWatched(movie) {
   setWatched((watched) => [...watched, movie]);
   localStorage.setItem("watched", JSON.stringify([...watched, movie]));
@@ -222,9 +224,8 @@ function handleAddWatched(movie) {
   onAddWatchedMovie={handleAddWatched}
   watched={watched}
 />
-
-// ----- inside function MovieDetails({props})   // >>> got the fn via props
-// -----
+// --- inside function MovieDetails({props}) 
+// --- got the fn-"handleAddWatched" via props
 function handleAdd() {
   const newWatchedMovie = {
     imdbID: selectedId,
@@ -250,7 +251,7 @@ function handleAdd() {
  * -------
 function handleAddWatched(movie) {
   setWatched((watched) => [...watched, movie]);
-  // localStorage.setItem("watched", JSON.stringify([...watched, movie]));  //>>> commented out this line
+  // localStorage.setItem("watched", JSON.stringify([...watched, movie]));  //>>> commented out this line (not required - if we use "useEffect")
 } 
 
 // ----- using useEffect!
@@ -262,7 +263,7 @@ useEffect(
 );
  * 
  * - as useEffect works on change of passed props that is "watched" (2nd arg) 
- * - and no need to spread the "watched" as it gets updated "watched" - array
+ * - hence, no need to spread the "watched" as it gets updated "watched" - array
  * 
  * $ Note:
  * - we only observe a []-empty string cause we set [] using "useState" >>> that will be the initial state we will see on initial mounting or initial rendering
@@ -271,68 +272,112 @@ useEffect(
  * # part-2
  * - on each initial render (or) re-render >>> we read the values that are stored!
  * 
- * >>> we may think that we gonna use a useEffect hook to retrieve data from local storage
+ * * we may think that we gonna use a "useEffect" hook to retrieve data from local storage (but we don't need)
  * 
  * - as useState hook also accepts a callback function, we gonna use that and returns a value.. as a result of .getItem() on localStorage
  * - but following the better way!
  * - ex:
  * -----
---- inside App() {...} component
+// --- inside App() {...} component
 const [watched, setWatched] = useState(function () {
   const storedValue = JSON.parse(localStorage.getItem("watched"));
   return storedValue
 });
  * 
- * - the passed fn must be a pure fn >>> it cannot accept any arguments
- * - ".getItem()"" is used to retrieve the stored value >>> use exact "key" that is "watched" that we used to store data using ".setItem()"
- * - the returned value will be used as initial state by react!
+ * - the passed fn must be a // => pure fn >>> it cannot accept any arguments
+ *    - fn that has to return a value without accepting any values
  * 
- * - react will consider only once on initial render and fn also gets executed only once on initial render, and ignored on sub-sequent re-renders
+ * - "localStorage.getItem()" is used to retrieve the stored value
+ *    - use exact "key" that is "watched" that we used to store data using ".setItem()"
+ * ex:
+ * ---
+function () {
+  const storedValue = JSON.parse(localStorage.getItem("watched"));
+  return storedValue
+}
  * 
- * - we stored data using JSON.stringify() so the type will be string, but we need array, so we used JSON.parse()
+ * - function executed only once on initial render and ignored on subsequent re-renders! 
+ *    - the returned value will be used as initial state by react!
+ * 
+ * - we stored data using "JSON.stringify()".. so the type will be string, but we need array, so we used "JSON.parse()"
  * 
  * $ Note:
  * - whenever the initial value of useState hook depends on some sort of computation then we shall always pass a // => function: pure fn
- * - never do... const [state, setState] = useState(localStorage.getItem("watched"))
+ *    - !!! warning !!! 
+ *    - never do... const [state, setState] = useState(localStorage.getItem("watched"))
  * 
  * >>> we set a "X" delete / remove for every watched movie, on-click removes that certain movie from the watched-list 
- *  - as we used "useEffect" to store a movie in local-storage, which works on "watched" state, so any changes in "watched" state automatically updates the local-storage also
+ * 
+ * ex:
+ * ---
+useEffect(
+  function () {
+    localStorage.setItem("watched", JSON.stringify(watchedMovie));
+  },
+  [watchedMovie]
+);
+ * 
+ * - as we used "useEffect" to store a movie in local-storage, which works on "watched" state, so any changes in "watched" state automatically updates the local-storage also
+ * 
  * - if we have used normal event-handler, we have to use another event handler to delete that movie from the local-storage as well... but we used "useEffect" which runs in sync with data
+ * 
+ * ex: 
+ * ---
+// - if we used event-handler fn: to add watched movie...
+function handleAddWatchedMovie(movie) {
+  setWatchedMovie((watchedMovie) => [...watchedMovie, movie]);
+  localStorage.setItem("watched", JSON.stringify([...watchedMovie, movie]))
+}
+
+// - then we have to use another event-handler fn: to remove the movie from watchedMovie list...
+  function handleDeleteWatchedMovie(id) {
+    setWatchedMovie((watchedMovie) => {
+      return watchedMovie.filter((movie) => movie.imdbID !== id);
+    });
+
+    localStorage.removeItem()   //>>> needed if we use event-listener
+  }
+ * 
  * 
  * ! 5. useState Summary
  * * summary of defining and updating state
  * 
- * #1 create the state
+ * >>> create the state
  * - we used useState Hook to create state
  * 
- * - we use [state, setState] = useState(0) => to create a state variable "A SIMPLE WAY"
- * - we can also create a state using callback function passing into useState() => [state, setState] = useState(() => localStorage.getItem(""))
+ * #1 we use "A SIMPLE WAY" to create a state variable
+ *    - [state, setState] = useState(0) 
  * 
- *    * the process of setting initial value to a state using callback fn
- * - this is called //=> lazy evaluation
+ * #2 based on callback function (initial state depends on computation)
+ *  * LAZY EVALUATION ()
+ *    - [state, setState] = useState(() => localStorage.getItem(""))
  * 
- * - callback fn only called on the initial render of the component, and on sub-sequent re-renders this is ignored !
- * - this callback must be a "pure fn" >>> and no arguments shall be passed into it
+ * - callback fn only called on the initial render of the component, and on sub-sequent re-renders this is ignored !!!
  * 
- * #2 update the state
- * - we used setter fn: "setState" to update the state 
+ * - this callback must be a "pure fn"
+ *    - no arguments shall be passed into it and it returns a simple value
  * 
- * - simple => setState(100)
- * - we can update the state using current state => setState((state) => state + 1)
- *    - we have to use callback fn, which must be pure and returns next state based on the current state!
+ * >>> update the state
+ * - we only have to use setter fn: "setState" to update the state 
+ * 
+ * #1 simple way 
+ *    - setState(100)
+ * #2 we can update the state using current state 
+ *    - setState((state) => state + 1)
+ * 
+ * - we have to use callback fn, which must be "PURE" and returns next state based on the current state!
  * 
  * $ Note:
  * * Never mutate objects or arrays while updating state! >>> but "replace" them! 
- * - (I think) => use spread operator (...) to create a copy and update it
+ * - (I think) => we have to use spread operator (...) to create a copy and update it !!!
  * 
  * ! 6. How NOT to Select DOM Elements in React
- * * into to "REFS"
  * 
  * ? why we need "refs" ?
  * 
  * >>> we select manually a DOM element and demonstrate why we need "refs" in doing so!
- * - manually select Search box component and focus it (on render)
- * - we can use useEffect, cause now we are interacting with DOM
+ * - manually select Search box component and focus it (on every render)
+ *    - we can use useEffect, cause now we are interacting with DOM which is outside the react's render-logic
  * - ex:
  * -----
 function Search({ query, onSetQuery }) {
@@ -354,23 +399,32 @@ function Search({ query, onSetQuery }) {
  * - on every render, the input field gets automatically focused!
  * 
  * $ Note:
- * - React is always "declarative", but here the code of selecting DOM elements is "imperative" 
- * - in react we don't add DOM elements like this manually! 
+ * - React is always "declarative", but here the code of selecting DOM elements which is "imperative" 
+ *
+ * - selecting DOM 
+ *    ... const el = document.querySelector('.search')
+ * - is "declarative"
  * 
- * - and if we add a dependency, the code will rerun on the change in dependency!
+ * - but in react we don't select DOM elements like this manually! 
+ * 
+ * - and if we add a dependency, the code will re-execute on the change of dependency-element!
  *    - then we would select element over and over again (on every re-render) 
  * 
- * >>> in order to make declarative way of selecting elements, we have "refs"
+ * >>> in order to make declarative way of selecting elements, we have "REFS"
  * 
  * ! 7. Introducing Another Hook: "useRef"
  * 
  * * what are "refs"?
- * 
  * - we use "useRef" to create a "ref", but what is a "REF"?
  * >>> "REF" stands for "REFERENCE"!
  * 
- * - "BOX" (object) with a 'mutable' >>> current property that is "persisted across renders" ("normal" variables are always reset)
- *    - which is box into which we can put any data that we want to be preserved between renders! 
+ * - "BOX" (an object) with a 'mutable' 
+ *    - current property that is "persisted across renders" 
+ * 
+ * $ Note:
+ * - ("normal" variables are always reset)
+ *    
+ *  - which is box into which we can put any data that we want to preserve between renders! 
  * 
  * - when we use "useRef", react gives a "box" with mutable current property >>> so that we can write any data into this current property and also read from it!
  * - ex:
@@ -387,24 +441,37 @@ myRef.current(100)          // >>> which declares that current property is mutab
  * #1 create a variable, which stays same between renders 
  *    - (ex: preserving previous state, storing setTimeout fn ID etc.,) 
  * 
- * #2 *** selecting and storing DOM elements
+ * #2 selecting and storing DOM elements (*IMPORTANT*)
  * 
  * $ Note:
- * - refs are usually for data that is not rendered individual o/p of the component: refs usually appear in event-handlers or effects, not in JSX (otherwise use useState) 
+ * - refs are usually for data that is not rendered in the visual o/p of the component: refs usually appear in event-handlers or effects, but not in JSX (otherwise use useState) 
  * - do not write or to read the current property in render logic >>> which would create undesirable side-effect
  * 
- * - refs and state are quite similar 
- * ? what are the similarities and differences between refs and state ?
+ * * refs and state are quite similar 
  * 
+ * ? what are the similarities and differences between refs and state ?
  * >>> common things
  * - refs and state are common but refs are lack in power compared to state
  * - both are persisted across renders (components remembers these values even after re-rendered!)
  * 
  * >>> differences
  * - updating state cause component re-render, but not with "refs"
+ * 
  * - state is immutable, but refs are mutable
+ * 
  * - state is updated asynchronously (we can't use new state immediately after updating it) 
- *    - refs updates are not asynchronous (we can read new current property immediately after updating it!)
+ *    - "ref" updates are not asynchronous 
+ * - (we can read new current property immediately after updating it! as this is impossible with state)
+ * 
+ * >>> follow the flow chart:
+ * - need to store the data?
+ *   - will data change at some point? 
+ *      - if NO, use regular const variable   
+ *    
+ *     - if YES, will it re-render the component? 
+ *          - if NO, use hook: "useRef"
+ *        
+ *        - if YES, use "useState" hook   
  * 
  * ! 8. Refs to Select DOM Elements
  * 
@@ -413,16 +480,12 @@ myRef.current(100)          // >>> which declares that current property is mutab
  * - ex:
  * -----
 function Search({ query, onSetQuery }) {
-  // useEffect(function () {
-  //   const el = document.querySelector('.search')
-  //   el.focus()
-  // }, []);
 
-  const inputEl = useRef()    // >>> create a ref => use "useRef" hook
+  const inputEl = useRef()      // >>> create a ref => use "useRef" hook
 
   useEffect(function () {
-    console.log(inputEl.current);
-    inputEl.current.focus();            // >>> to use this "ref" => use "useEffect"- hook
+    // console.log(inputEl.current);
+    inputEl.current.focus();        // >>> to use this "ref" => use "useEffect"- hook
   }, []);
 
   return (
@@ -431,7 +494,7 @@ function Search({ query, onSetQuery }) {
       type="text"
       placeholder="Search movies..."
       value={query}
-      ref={inputEl}                                       // >>> connect the element 
+      ref={inputEl}        // >>> connect the element 
       onChange={(e) => onSetQuery(e.target.value)}
     />
   );
@@ -439,14 +502,28 @@ function Search({ query, onSetQuery }) {
  * - there are three steps to use "useRefs"
  * 
  * #1 => create a variable with "useRef" 
- *    - const variable = useRef(null)     >>> when we work with a DOM element, then the value passed into "useRef" must be "null"
+ *    - const element = useRef(null)     >>> when we work with a DOM element, then the value passed into "useRef" must be "null"
  * 
  * #2 => connect the element (in a declarative way!)
- *    - <input ref={"variable"}/>   >>> use "ref" prop and store the element that we created as a value
+ *    - <input ref={element}/>   >>> use "ref" prop and store the element that we created as a value
  * 
  * #3 => use the ref => use "useEffect" hook
  *    - ref can only gets added to DOM element after the DOM has already loaded 
  *    - we can use it inside "useEffect" only after the initial-render or DOM has loaded 
+ * 
+ * $ Note:
+ * #1 we created a variable using "useRef" and passed "null" as an argument to useRef 
+ *    - when we select DOM elements
+ * 
+ * #2 we have to connect to that element where we want to set a functionality
+ *    - ref={variable} >>> variable that was created with "useRef"
+ * 
+ * #3 "useEffect" which has to run on "mount / initial-render"
+ *    - for the functionality we have to use "useEffect" 
+ *    - selecting the dom with "inputEl.current" and applying "focus()" functionality
+ * 
+ * $ Note:
+ * - remember that we are not allowed to mutate the "REF" in render-logic, instead we have to use "useEffect"
  * 
  * ! 9. Refs to Persist Data Between Renders
  * 
@@ -470,7 +547,7 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatchedMovie, watched}) {
 
   const countRef = useRef(0);   // >>> defining a "ref"
 
-  useEffect(          // >>> updating the "ref"
+  useEffect(          // >>> updating the "ref" using useEffect (ref not to be updated with in render-logic)
     function () {
       if(userRating)
       countRef.current = countRef.current + 1;
@@ -496,19 +573,35 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatchedMovie, watched}) {
   return(...)
 }
  * 
+ * - we created the 'ref' >>> to store the amount of clicks that happened before the user's final rating decision
+ * - we don't want to render that rating on to the UI (we do not want to create a re-render, each-time when "userRating" updates)
+ * - after "userRating" updates >>> we update the current property of "countRef" with 'useEffect' 
+ * 
  * - create a "ref" using "useRef" and update using "useEffect" not inside "render-logic"
- *    - useEffect shall update the ref >>> each time the "userRating" updates
+ *    - 'useEffect' shall update the ref >>> each time the "userRating" updates
  *  
  * - by doing this.. we won't create a re-render! 
  * 
  * - if user decides which rating has to be given, before finalizing the rating
  *    - but that count shall not be rendered on the screen!
  * 
+ * - if we did the same with a variable, then it reset to initial value stored in that variable on every decision that user makes
+ *    - normal variables are not persistent across renders and does not trigger a re-render
+ * 
+ * ? state vs refs
+ * >>> state: 
+ *    - this is persistent and also triggers a re-render
+ * >>> ref: 
+ *    - this is persistent and does not trigger a re-render (when updated)
+ *    - that's why we don't use 'refs' in JSX output
+ * 
  * ! 10. What are Custom Hooks? When to Create One?
  * 
  * * Reusing logic with custom hooks
  * - custom hooks are all about re-usability
- * - in react, we have two things that we can reuse
+ * - in react, we have two things that we can reuse 
+ * 
+ * - a piece of.. 
  *    #1 UI
  *    #2 Logic
  * 
@@ -517,13 +610,18 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatchedMovie, watched}) {
  * 
  * #2 logic 
  * - if we want to re-use a piece of logic, ask a question >>> 
- *    ? does the logic consists of hooks?
- * >>> if no!   >>> we need a regular function
- * >>> if yes!  >>> if logic consists of hooks, we need to create // => custom hook
+ *    
+ * ? does the logic we need to re-use.. consists of hooks?
+ * >>> if no!  
+ *    - we need a regular function (which can live either inside or outside of a component)
  * 
+ * >>> if yes! (need to re-use a logic with hooks?)
+ *    - if logic consists of hooks, (as we cannot extract logic into reg. fn) 
+ *    - instead we need to create // => custom hook
+ *
  * * Custom Hook:
  * - in react, custom hooks allows us to re-use stateful logic among multiple components (not only state-ful logic but any logic that contains one or more react hooks)
- *    >>> simply, allows us to reuse non-visual logic in multiple components
+ *    >>> simply, allows us to reuse non-visual logic in multiple components (generally)
  * 
  * - one hook shall have one purpose, to make it "reusable" and "portable" (even across multiple projects)
  * 
@@ -532,27 +630,27 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatchedMovie, watched}) {
  * >>> but custom hooks are made out of regular react hooks!
  * - so "rules of hooks" still apply to them (custom hook)
  * 
- * $ Note:
+ * $ Deep Dive:
  * - custom hook is a JS fn. receive and return any data relevant to that hook 
  * - normal JS fn also receive and return data but that will be props and JSX respectively
  * 
  * ? differences between custom hooks and reg fn
  * - ex:
  * -----
-function useFetch(url) {
+function useFetch(url) {    
   const [data, setData] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);    // >>> HOOK (1)
 
-  useEffect(function () {
+  useEffect(function () {               // >>> HOOK (2)
     fetch(url).then(res => res.json())
       .then(res => setData(res))
   }, []);
-  return [data, isLoading]
+  return [data, isLoading]    // >>> custom hooks can receive and return data (usually with [] or {}) unlike components 
 }
  * 
  * >>> differences: 
- * - it is very common to return an object or an array from a custom hook, which is diff from comp., 
- *    - where components are also reg fn., but they can only receive "props" and return only "JSX" 
+ * - it is very common to return an object or an array from a custom hook, which is diff from component, 
+ *    - where "components" are also reg fn., but they can only receive "props" and return only "JSX" 
  * 
  * - custom hooks need to use one or more react built-in hooks (must and should)
  * 
@@ -677,7 +775,7 @@ export function useMovies(query, callback) {
             setError(err.message);
           }
         } finally {
-          setIsLoading(false); // whenever the data fetching was completed!
+          setIsLoading(false); // >>> whenever the data fetching was completed!
         }
       }
       if (query.length === 0) {
@@ -724,227 +822,33 @@ export default function App() {
  * 
  * ! 12. Creating useLocalStorageState
  * 
+import { useState, useEffect } from "react";
+
+export function useLocalStorageState(initialState, key) {
+  // we used "value" not "watched" and same for setter fn too.. for reusing the custom-hook for other apps also
+  // what ever this below fn returns.. will be the value for 'initialState'
+  //
+  const [value, setValue] = useState(function () {
+    const storedValue = localStorage.getItem(key);
+
+    // sometimes if there were no items inside "localStorage" return initialState that is... []
+    return storedValue ? JSON.parse(storedValue) : initialState;
+  });
+  useEffect(
+    function () {
+      localStorage.setItem(key, JSON.stringify(value));
+    },
+    [value, key]
+  );
+  return [value, setValue];
+}
+// - inside App.js
+// ----------------
+const [watchedMovie, setWatchedMovie] = useLocalStorageState([], "watched");
+ * 
+ * 
  * ! 13. Creating useKey
- * 
- *  
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
+ * - SKIPPED !!!
  * 
  * 
  * 

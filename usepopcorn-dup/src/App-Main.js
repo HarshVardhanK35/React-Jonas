@@ -1,9 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
 import StarRating from "./components/starrating.js";
-import { useMovies } from "./components/useMovies.js";
-import { useLocalStorageState } from "./components/useLocalStorageState.js";
-import { useKey } from "./components/useKey.js";
 // import { tempMovieData, tempWatchedData } from "./data.js";
 
 // const average = (arr) =>
@@ -21,23 +18,20 @@ function App() {
   // const tempQuery = "Interstellar";
   const [query, setQuery] = useState("");
 
-  // retrieving the local storage values.. "useState" not only takes initial values but also a callback function...
-  // part-2 replaced with custom-hook: "useLocalStorage"
-  const [watchedMovie, setWatchedMovie] = useLocalStorageState([], "watched");
-
+  // retrieving the local storage values.. "useState" not only takes initial values but also a callback function
   // const [watchedMovie, setWatchedMovie] = useState([]);
+  const [watchedMovie, setWatchedMovie] = useState(function () {
+    const storedValue = localStorage.getItem("watched");
+    return JSON.parse(storedValue);
+  });
+  const [movies, setMovies] = useState([]);
 
-  // const [watchedMovie, setWatchedMovie] = useState(function () {
-  //   const storedValue = localStorage.getItem("watched");
-  //   return JSON.parse(storedValue);
-  // });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   // to select a movie and to render selected-movie details on right hand box
   // const [selectedId, setSelectedId] = useState("tt1375666");
   const [selectedId, setSelectedId] = useState(null);
-
-  // custom-hook: "useMovies()"
-  const { movies, isLoading, error } = useMovies(query); // pass "handleCloseMovieDetails" here to add a functionality
 
   // function: selecting a movie...
   function handleSelectMovie(id) {
@@ -57,19 +51,75 @@ function App() {
   }
 
   // (2) - set the "watchedMovie" using "useEffect" >>> works whenever watchedMovie state updates
-  // useEffect(
-  //   function () {
-  //     localStorage.setItem("watched", JSON.stringify(watchedMovie));
-  //   },
-  //   [watchedMovie]
-  // );
+  useEffect(
+    function () {
+      localStorage.setItem("watched", JSON.stringify(watchedMovie));
+    },
+    [watchedMovie]
+  );
 
   //
   function handleDeleteWatchedMovie(id) {
     setWatchedMovie((watchedMovie) => {
       return watchedMovie.filter((movie) => movie.imdbID !== id);
     });
+
+    localStorage.removeItem();
   }
+
+  // this has to be executed at a certain point of time!
+  useEffect(
+    function () {
+      const controller = new AbortController();
+
+      async function fetchMovies() {
+        try {
+          setIsLoading(true);
+          setError("");
+
+          const res = await fetch(
+            `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`,
+            { signal: controller.signal }
+          );
+
+          if (!res.ok)
+            throw new Error("Something went wrong while fetching movies!");
+
+          const data = await res.json();
+
+          if (data.Response === "False")
+            throw new Error(
+              "Movie not found! Please enter correct movie name!"
+            );
+
+          setMovies(data.Search);
+          setError("");
+        } catch (err) {
+          if (err.name !== "AbortError") {
+            console.log(err.message);
+            setError(err.message);
+          }
+        } finally {
+          setIsLoading(false);
+        }
+      }
+      if (query.length < 2) {
+        setMovies([]);
+        setError("");
+        return;
+      }
+
+      // if there was any movie-details that is opened, close that before fetching movies
+      handleCloseMovieDetails();
+      fetchMovies();
+
+      // search for complete movie-string "inception" do not search for parts of movie-title
+      return function () {
+        controller.abort();
+      };
+    },
+    [query]
+  );
 
   return (
     <>
@@ -137,16 +187,31 @@ function Logo() {
 }
 
 function Search({ query, onSetQuery }) {
-  // --- IMPERATIVE
-  const inputEl = useRef(null);
+  // --- DYNAMIC
+  // useEffect(function () {
+  //   const el = document.querySelector(".search")
+  //   el.focus()
+  // }, [])
 
-  // custom-hook: "useKey"
-  useKey("Enter", function () {
-    if (inputEl.current && document.activeElement !== inputEl.current) {
-      inputEl.current.focus();
-      onSetQuery("");
-    }
-  });
+  // --- IMPERATIVE
+  const searchElement = useRef(null);
+
+  useEffect(
+    function () {
+      function callback(e) {
+        if (document.activeElement === searchElement.current) return;
+
+        if (e.code === "Enter") {
+          searchElement.current.focus();
+          onSetQuery("");
+        }
+      }
+      document.addEventListener("keydown", callback);
+
+      return () => document.addEventListener("keydown", callback);
+    },
+    [onSetQuery]
+  );
 
   return (
     <input
@@ -155,7 +220,7 @@ function Search({ query, onSetQuery }) {
       placeholder="Search movies..."
       value={query}
       onChange={(e) => onSetQuery(e.target.value)}
-      ref={inputEl}
+      ref={searchElement}
     />
   );
 }
@@ -268,8 +333,23 @@ function MovieDetails({
     onCloseMovieDetails();
   }
 
-  // custom-hook: "useKey"
-  useKey("Escape", onCloseMovieDetails);
+  // Globally: listen to "Escape" key
+  useEffect(
+    function () {
+      function callback(e) {
+        if (e.code === "Escape") {
+          onCloseMovieDetails();
+        }
+      }
+      document.addEventListener("keydown", callback);
+
+      // clean-up: to remove existing event
+      return function () {
+        document.removeEventListener("keydown", callback);
+      };
+    },
+    [onCloseMovieDetails]
+  );
 
   // fetch: individual movie details on selection
   useEffect(

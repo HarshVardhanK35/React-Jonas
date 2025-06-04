@@ -1,50 +1,52 @@
-//
+// `https://api.frankfurter.app/latest?amount=100&from=EUR&to=USD`
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 function App() {
-  const [amount, setAmount] = useState(1);
+  const [currency, setCurrency] = useState(1);
   const [fromCur, setFromCur] = useState("USD");
   const [toCur, setToCur] = useState("INR");
-  const [output, setOutput] = useState("");
+  const [res, setRes] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
-  function handleChange(e) {
-    setAmount(Number(e.target.value));
-  }
 
   useEffect(
     function () {
-      async function convert() {
-        setIsLoading(true);
+      async function convertCurrency() {
+        try {
+          setIsLoading(true);
 
-        const res = await fetch(
-          `https://api.frankfurter.app/latest?amount=${amount}&from=${fromCur}&to=${toCur}`
-        );
-        if (!res.ok) throw new Error("Something went wrong!");
+          const res = await fetch(
+            `https://api.frankfurter.app/latest?amount=${1}&from=${fromCur}&to=${toCur}`
+          );
+          if (!res.ok) throw new Error("Something went wrong!");
 
-        const data = await res.json();
-        setOutput(data.rates[toCur]);
-        setIsLoading(false);
-        console.log(data)
+          const data = await res.json();
+          setRes(data.rates[toCur]);
+
+          setIsLoading(false);
+          //
+        } catch (err) {
+          console.error(err.message);
+        }
       }
-
-      if (amount === 0 || toCur === fromCur) {
-        setOutput(amount)
-        return
+      if (currency === 0 || fromCur === toCur) {
+        setRes(currency);
+        return;
       }
-      convert();
+      convertCurrency();
+
+      // clean-up function (unnecessary)
       return function () {};
     },
-    [amount, fromCur, toCur]
+    [currency, fromCur, toCur]
   );
 
   return (
     <div>
       <input
         type="text"
-        value={amount}
-        onChange={(e) => handleChange(e)}
+        value={currency}
+        onChange={(e) => setCurrency(Number(e.target.value))}
         disabled={isLoading}
       />
       <select
@@ -62,14 +64,18 @@ function App() {
         onChange={(e) => setToCur(e.target.value)}
         disabled={isLoading}
       >
-        <option value="INR">INR</option>
-        <option value="CAD">CAD</option>
-        <option value="EUR">EUR</option>
         <option value="USD">USD</option>
+        <option value="EUR">EUR</option>
+        <option value="CAD">CAD</option>
+        <option value="INR">INR</option>
       </select>
-      <p>
-        {output} {toCur}
-      </p>
+      {isLoading ? (
+        <p>...</p>
+      ) : (
+        <p>
+          OUTPUT: {res} {toCur}
+        </p>
+      )}
     </div>
   );
 }
