@@ -58,13 +58,12 @@ function App() {
     [watchedMovie]
   );
 
-  //
   function handleDeleteWatchedMovie(id) {
     setWatchedMovie((watchedMovie) => {
       return watchedMovie.filter((movie) => movie.imdbID !== id);
     });
 
-    localStorage.removeItem();
+    // localStorage.removeItem();
   }
 
   // this has to be executed at a certain point of time!
@@ -94,6 +93,7 @@ function App() {
 
           setMovies(data.Search);
           setError("");
+          // 
         } catch (err) {
           if (err.name !== "AbortError") {
             console.log(err.message);
@@ -103,6 +103,8 @@ function App() {
           setIsLoading(false);
         }
       }
+      // to start fetching movies from two characters 
+      // (for inception: start searching from "in")
       if (query.length < 2) {
         setMovies([]);
         setError("");

@@ -24,22 +24,18 @@ function useGeolocation() {
       }
     );
   }
-  return { getPosition, isLoading, error, position };
+  return {isLoading, position, error, getPosition};
 }
 
-function App() {
-  const [countClicks, setCountClicks] = useState(0);
+export default function App() {
 
-  const {
-    getPosition,
-    position: { lat, lng },
-    isLoading,
-    error,
-  } = useGeolocation();
+  const { isLoading, position, error, getPosition } = useGeolocation();
+  const [countClicks, setCountClicks] = useState(0);
+  const { lat, lng } = position;
 
   function handleClick() {
     setCountClicks((count) => count + 1);
-    getPosition();
+    getPosition()
   }
 
   return (
@@ -52,7 +48,7 @@ function App() {
       {error && <p>{error}</p>}
       {!isLoading && !error && lat && lng && (
         <p>
-          Your GPS position:
+          Your GPS position:{" "}
           <a
             target="_blank"
             rel="noreferrer"
@@ -67,5 +63,3 @@ function App() {
     </div>
   );
 }
-
-export default App;
