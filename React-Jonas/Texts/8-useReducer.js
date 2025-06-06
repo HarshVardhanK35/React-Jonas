@@ -313,19 +313,38 @@ const [state, dispatchFn] = useReducer(reducerFn, initialState)
  * >>> fetching data from that fake-api: 
  * - we have to fetch that data on "mount" >>> so use "useEffect" inside App.js
  * 
+ * $ Note:
+ * - with "dispatch" fn.. we will dispatch an action to "reducer" 
+ * ex:
+ * ---
+dispatch({ type: "dataReceived", payload: data })
  * 
+ * - "type" is like an "action"              >>> reducer fn respond to that action
+ * - "payload" is "information / data"  >>> sent to reducer to compute next state
  * 
+ * $ summary:
+ * - we installed "json-server" to create a fake API 
+ *    - set an NPM script (to run that package) 
  * 
+ * - we used "useEffect" to fetch data on the initial render 
+ *    - then to store data in state, we used useReducer-Hook
  * 
+ * - with "dispatch" we send the action-type and payload 
+ *    - based on the action and payload.. next state will be created 
  * 
+ * ! 6. Handling Loading, Error, and Ready Status
  * 
+ * - explained in application
  * 
+ * ! 7. Starting a New Quiz
  * 
+ * - implementing quiz.. displaying "questions" and "options"
  * 
+ * - inside /components/StartScreen .. 
+ *    - we implemented a button, on clicking it we have to display questions + options and some other data (that might needed)
  * 
- * 
- * 
- * 
+ * - on status set to "active" .. 
+ *    - we have to display a component that has to render "Questions"
  * 
  * 
  * 
