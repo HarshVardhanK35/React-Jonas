@@ -346,9 +346,22 @@ dispatch({ type: "dataReceived", payload: data })
  * - on status set to "active" .. 
  *    - we have to display a component that has to render "Questions"
  * 
+ * ! 8. Displaying Questions
  * 
+ * ! 9. Handling New Answers
  * 
+ * ! 10. Moving to the Next Question
  * 
+ * ! 11. Displaying Progress
+ * 
+ * ! 12. Finishing a Quiz
+ * 
+ * ! 13. Restarting a Quiz
+ * 
+ * ! 14. Setting Up a Timer With useEffect
+ * 
+ * $ remember:
+ * - what ever the payload that is sent from "dispatch" fn is "data"
  * 
  * 
  * 

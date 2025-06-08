@@ -4,5 +4,4 @@ function Main({ children }) {
   </main>;
 }
 
-
 export default Main
