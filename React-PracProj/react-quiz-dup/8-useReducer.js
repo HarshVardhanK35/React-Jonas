@@ -301,6 +301,7 @@ const [state, dispatchFn] = useReducer(reducerFn, initialState)
 },
  * 
  * #3 add "server": "json-server --watch data/questions.json --port 8000"
+ *    - can be any port-number
  * 
  * #4 run command:
  *    - open terminal -> run "npm run server"
@@ -359,6 +360,72 @@ dispatch({ type: "dataReceived", payload: data })
  * ! 13. Restarting a Quiz
  * 
  * ! 14. Setting Up a Timer With useEffect
+ * 
+ * ! 15. Section Summary: useState vs. useReducer
+ * 
+ * * useState and useReducer differences:
+ * 
+ * #1 useState
+ * ------------
+ * - ideal for single, independent pieces of state
+ * - logic to update the state is directly placed inside event-handlers or effects, spread all over one or multiple components 
+ * - state is updated by calling "setter-fn" returned from "useState" 
+ * - "imperative" state updates
+ * - easy to understand and to use
+ * 
+ * - ex- game:
+ * -------------
+setScore(0)
+setPlaying(true)
+setTimerSec(0)
+ * 
+ * #2 useReducer
+ * --------------
+ * - ideal for multiple related pieces of state and complex states
+ * - logic to update state lives in one central place, decoupled from components: that is "reducer-fn"
+ * - state is updated by "dispatching an action" to a reducer
+ * - "declarative" state updates
+ *    - where complex state transitions are mapped to actions
+ * - more difficult to understand and implement
+ * ex:
+ * ---
+dispatch({type: "startGame"})
+ * 
+ * * When to use "useReducer" ?
+ * 
+ * - ask questions...
+ * ----- 
+ * ? #1 ask: do we need one piece of state
+ *      - if "yes", then use "useState"
+ * 
+ * - if "no", 
+ * ? #2 ask: Do state frequently updates?
+ *    - if "yes",
+ *      ? #2.1 ask: are you willing to write complex code that is: "reducer-fn"?
+ *        - if "no", use "useState"
+ *            - if "yes", use "useReducer" 
+ * - if "no", 
+ * ? #3 ask: do we need over 3 or 4 pieces of related state, including object (this is called: "complex-state")?
+ *    - if "yes", use "useReducer" with "reducer-fn" 
+ * 
+ * - if "no", 
+ * ? #4 ask: too many event-handlers, which makes components large and confusing?
+ *    - if "yes", consider using "useReducer" with "reducer-fn"     
+ * 
+ * - if "no"
+ *    - use "useState"
+ * 
+ * $ NOTE:
+ * - useState must remain as default choice for managing state
+ *    - even after learning "useReducer"
+ * 
+ * ! 16 CHALLENGE #1: Creating a Bank Account With useReducer
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
  * 
  * $ remember:
  * - what ever the payload that is sent from "dispatch" fn is "data"
