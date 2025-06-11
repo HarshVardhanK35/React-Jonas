@@ -8,13 +8,16 @@
  * #1 terminal 
  *    => npm create vite@latest 
  * 
+ * - then it asks for a confirmation, project-name, selection of framework and variant
+ * 
+ * - "cd" into created folder
  * #2 after INSTALLATION:
- *      - vite only sets up the necessary packages and we must install them 
- *          - use "npm install"
+ *      - vite only sets up the necessary packages and we must install them, use...
+ *          => "npm install"
  *      - to start the application, we have to use..
  *          => "npm run dev"
  * 
- * #3 we have to manually open the application with 'URL' provided
+ * #3 we have to manually open the application with 'URL' provided after installation
  * 
  * $ NOTE:
  * - we used "npm start" for apps created with "npx create-react-app my-react-app"
@@ -24,7 +27,7 @@
 - package.json
 --------------
 "scripts": {
-    "dev": "vite",
+    "dev": "vite",            // - this is why it is: "npm run dev"
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -129,19 +132,19 @@ extends: [
  * 
  * * Routing:
  * -----------
- * - with "ROUTING", we match different URLs to different UI views which are react components => ROUTING
+ * - with "ROUTING", we match different URLs to different UI views (which are react components) => ROUTING
  *    - when one of those URLs visited, corresponding react component will be rendered!
  * 
  * - ex: 
- *    - "/" for "home-page" 
- *    - "/login" to render "login-page"  
+ *    - "/"       =>  "home-page" 
+ *    - "/login"  =>  "login-page"  
  * 
  * - this enables users to navigate between different application screens, using browser URL 
  * 
  * >>> in REACT, we use 3rd party package to handle "routing" 
  *    => React Router
  * 
- * >>> Routing is fundamental to build Single-Page Applications
+ * >>> Routing is fundamental to build "Single-Page Applications"
  * 
  *  * Single Page Apps (SPA)
  * ---------------------------
@@ -150,7 +153,7 @@ extends: [
  * 
  * >>> Routes: different URLs correspond to different views or components
  * 
- * - whenever a user clicks on links provided by Router, URL simply changes
+ * - whenever a user clicks on links provided by Router, URL on browser changes
  *    - in case of React, this is done with "React-Router" 
  * 
  * - changing the URL, trigger the update inside DOM as a result 
@@ -170,7 +173,7 @@ extends: [
  * - but according to lecture and follow up, use: // => npm i react-router-dom@6
  *    - install version: 06
  * 
- * - create some pages that we want to render on specific routes
+ * - create some pages that we want to update the render on specific routes
  *    - "/"         => "homepage"
  *    - "/product"  => "product"
  *    - "/pricing"  => "pricing" pages
@@ -212,6 +215,10 @@ export default App;
 <Route path = "*" element={ <PageNotFound /> } />
  * 
  * $ NOTE:
+ * - we are passing on the complete element like.. 
+ *    - <Product /> into element={<Product />}
+ * - so that we can pass in props into that element 
+ * 
  * - till now with this set-up.. we are routing through components by manually changing URLs
  * 
  * >>> but we need single-page app, so we need links (linking pages)
@@ -224,10 +231,12 @@ export default App;
  * - setting up anchor tags 
  *    => <a href="/product"> Product </a>
  * 
- * - if we followed this.. we see a hard-reload happening while clicking on those links
- *    - but we need movement from one page to other, by simply replacing DOM content
+ * - we need movement from one page to other, by simply replacing DOM content
+ *    - but if we followed this.. we see a hard-reload happening while clicking on those links
  * 
- * - so we use "link" element that was provided by react-router-dom
+ * >>> Modern way:
+ * 
+ * - so we use "link" that was provided by same react-router-dom
  * ex:
  * ---
 import { Link } from "react-router-dom";
@@ -250,6 +259,7 @@ export default function HomePage() {
  *    
  * - with the above implementation we can only move from "Homepage" to "/Product" 
  *    - so we implement a "page-navigation"... so that we can use in other pages as well 
+ * 
  * ex:
  * ---
 PageNav.jsx (a reusable component)
@@ -315,7 +325,7 @@ function PageNav() {
 export default PageNav;
  * 
  * - by using this "NavLink".. we get a CSS class attached to every element
- *    - whenever we are on that page.. that class changes 
+ *    - whenever we are on that page.. that class will be assigned to "active"
  *    => class="active"
  * 
  * - all other links will not get "active" as class-value
@@ -497,9 +507,11 @@ export default Sidebar;
  * 
  * * INDEX route
  * --------------
- * - this is basically a default child route
- *    - when none of the children routes match to the URL /app/cities..
- *      - then index-route will be executed and rendered
+ * - Default Child Route
+ * 
+ * 
+ * - when none of the children routes match to the URL /app/cities..
+ *    - then index-route will be executed and rendered
  * 
  * >>> best use-case...
  * - index routes are useful when we define a path to "/" >>> home
@@ -545,16 +557,61 @@ export default AppNav;
  * 
  * - this will render a tab component 
  * 
+ * $ NOTE:
+ * - the path we specify "to" prop inside "NavLink" has to match exactly..
+ *    - the "path" prop that we specify inside "Route" 
+ * ex:
+ * ---
+NavLink:
+<li>
+  <NavLink to="cities">Cities</NavLink>
+</li>
+
+Route:
+<Route path="cities" element={<p>List of cities</p>} />
  * 
+ * - as we can do the same with useState that is active-tabs 
+ *    - when a tab gets activated.. renders that specific content 
  * 
+ * - similarly, we use react-router and URL to store the state of active tab
  * 
+ * - this is "sub-navigation" with "<Outlet />" 
+ *    - as "Outlet" that is provided with react-router-dom
  * 
+ * ! 8. Storing State in the URL
  * 
+ * ? Storing state in URL ???
+ *    ? don't we actually use "useState- Hook" to manage state ?
  * 
+ * - that's true most of the time 
+ *    - but URL is also a best place to store state (especially the UI state)
+ 
+* >>> UI State: 
+ *    - state that affects the UI appearance (UI looks like) 
  * 
+ * - URL is an excellent place to store UI state and alternative to useState 
+ *    - ex: open/closed panels, current selected list item, list sorting order, applied list filters
  * 
+ * - these examples of state are best to be stored in URL 
+ *    - managed by URL with "react-router"
  * 
+ * ? why should do so ?
+ *  
+ * - it is an easy way to store state in "global-place", accessible to all components in the application
+ *    
+ * $ REMEMBER:
+ * - we used to store state inside parent and then pass it to all it's children 
+ *    - using "props"
  * 
+ * >>> like movement of "STATE-MANAGEMENT" from react to URL
+ * 
+ * - if we do place state in URL, 
+ * #1 we can read the value from there.. wherever the component is present in the component tree.
+ * 
+ * #2 good way to "pass-data" from one page into the next
+ *    - without having to store the data temporarily inside App() component
+ * 
+ * #3 
  * 
  * 
  * 
