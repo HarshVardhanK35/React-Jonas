@@ -611,56 +611,246 @@ Route:
  * #2 good way to "pass-data" from one page into the next
  *    - without having to store the data temporarily inside App() component
  * 
- * #3 
+ * #3 to "Bookmark and share" the page with exact UI state.. it had at that time (while marking)  
+ *    - if we applied filter to an online shop app, when we share that to someone 
+ *      - then, they can also view same filters that we applied 
  * 
+ * ? How can we do this with "React-Router" ?
+ * ex:
+ * - www.example.com/app/cities/lisbon?lat=38.724$lang=-9.141
  * 
+ * - from the above URL, 
+ *    - /app/cities => consider this part as state (it corresponds to the component that is being rendered)
+ *      - but this is not useful for state-management 
  * 
+ * >>> to store state in URL..
+ * * we use params or query string
+ * #1 params: parameters 
+ *    - these are very useful to pass data to next page
+ *    
+ * #2 query-string:
+ *    - this is useful to store global state.. that should be accessible from everywhere
  * 
+ * $ NOTE:
+ * - from the above example, 
+ *    - the loaded page will be based on params,
+ *    - we also store "lat" "lng" inside query-string, each city has unique location
+ *      - that location is reflected in the URL
  * 
+ * - from this example, 
+ *    - demonstrated power of URL to manage state by reading city name and GPS location from the URL instead of application state from react
  * 
+ * ! 9. Dynamic Routes With URL Parameters
  * 
+ * - now use react-router params in order to pass data between pages
+ *    - to use prams... 
  * 
+ * - we have three steps ---
+ * #1 create a new route >>> (inside App.js)
+ * ex:
+ * ---
+<Route path="cities/:id" element={<City />} />    // - "id" is parameter name
  * 
+ * - :id will be the city-id
  * 
+ * - "/cities/:id" similar to "/cities/2099643"
+ * - when we console.log(id) in 3rd step >>> we get "2099643"
  * 
+ * #2 link that route: 
+ * ex:
+ * ---
+<Link className={styles.cityItem} to={`${id}`}>   // - with "to" prop
+  <span className={styles.emoji}>{emoji}</span>
+  <h3 className={styles.name}>{cityName}</h3>
+  <time className={styles.date} >
+    ({formatDate(date)})
+  </time>
+  <button className={styles.deleteBtn}>&times; </button>
+</Link>
  * 
+ * - the "to" prop is assigned with "id" that was destructured from "city" inside "CityItem.jsx"
+ *    - const { cityName, date, emoji, id } = city;
  * 
+ * $ NOTE: 
+ * - the URL has to be "/app/cities/id" but not "/app/id"
  * 
+ * * useParams() Hook
+ * -------------------
+ * #3 in that route, we read state from URL
  * 
+ * - inside "City.jsx" use "useParams" hook from react-router and get that state: ID that is stored inside URL
+ * ex:
+ * ---
+const x = useParams()
+console.log(x)
  * 
+ * - we can use destructuring
+ * ex:
+ * ---
+const { id } = useParams();
+console.log(id);
  * 
+ * ! 10. Reading and Setting a Query String
  * 
+ * - second way of storing state inside URL with Query-String 
  * 
+ * - syntax:
+ * >>> ?varName1={value}&varName2={value}
  * 
+ * $ NOTE:
+ * * everything that is there inside URL is global state, we can use with in every component which gets access to that URL
  * 
+ * ex:
+function CityItem({ city }) {
+  const { cityName, date, emoji, id, position } = city;   // - destructured city here
+  const { lat, lng } = position;      // - destructured position here
+  console.log(lat);
+
+  return (
+    <li>
+      <Link className={styles.cityItem} to={`${id}?lat=${lat}&lng=${lng}`}>
+        <span className={styles.emoji}>{emoji}</span>
+        <h3 className={styles.name}>{cityName}</h3>
+        <time className={styles.date}>({formatDate(date)})</time>
+        <button className={styles.deleteBtn}>&times; </button>
+      </Link>
+    </li>
+  );
+}
  * 
+ * - the "TO" prop and it's value
+ *    - value: `${id}?lat=${lat}&lng=${lng}`
  * 
+ * >>> Reading the values from query-strings
+ * - we use "useSearchParams()" hook from "react-router"
  * 
+ * * useSearchParams()
+ * --------------------
+ * - this is similar to useState-Hook & returns an array of current state and setter fn
+ *    - destructure them into an array
+ * ex:
+const [searchParams, setSearchParams] = useSearchParams()
+ *  
+ * $ DEFINITION (ACTUAL):
+ * - Returns a tuple of the current URL's URLSearchParams and a function to update them. Setting the search params causes a navigation.
  * 
+ * - whatever the data that is stored inside "searchParams" is not directly accessible
+ *    - so we have to use .get("") on the current-state that is "searchParams" that was returned
+ * ex:
+ * ---
+const [searchParams, setSearchParams] = useSearchParams();
+const lat = searchParams.get("lat");
+console.log(lat);
  * 
+ * >>> Updating the Query String:
+ * - use setSearchParams function
+ * ex:
+ * ---
+import { useSearchParams } from "react-router-dom";
+import styles from "./Map.module.css";
+
+function Map() {
+  // - useSearchParams here..
+  const [searchParams, setSearchParams] = useSearchParams();
+  const lat = searchParams.get("lat");
+  const lng = searchParams.get("lng");
+
+  return (
+    <div className={styles.mapContainer}>
+      <h1>Map</h1>
+      <h1>
+        Position: {lat}, {lng}
+      </h1>
+      <button
+        onClick={() => {
+          setSearchParams({ lat: 23, lng: 50 });
+        }}
+      >
+        Change position
+      </button>
+    </div>
+  );
+}
+export default Map;
  * 
+ * - on-click updates lat and lng every where in the application
+ *    - it not only updates inside "URL" but also everywhere in the app.. where this data is read!
  * 
+ * ! 11. Programmatic Navigation with useNavigate Hook
  * 
+ * >>> programmatic navigation means to move to a new URL without clicking on any link 
+ * - use-case:
+ *    - after submitting a form, when users submits a form.. user moves to a new page automatically in an app
  * 
+ * - as per practice project:
+ *    - whenever a user clicks on the area where map renders
+ *    - then user shall automatically move to URL: /app/form
+ * ex:
+ * ---
+function Map() {
+  return (
+    <div className={styles.mapContainer} onClick={() => { } }>
+    ---
  * 
+ * - so as per above example, we are listening for click event on the total map
  * 
+ * - we include a useNavigate Hook inside this Map- component and navigate to "/app/form"  
  * 
+ * * useNavigate()
  * 
+ * $ Definition (actual)  
+ * - Returns a function that lets you navigate programmatically in the browser in response to user interactions or effects.
+ * ex:
+ * ---
+const navigate = useNavigate()
  * 
+ * - so using inside onClick()
+ * ex:
+ * ---
+function Map() {
+  return (
+    <div
+      className={styles.mapContainer}
+      onClick={() => {
+        navigate("form");
+      }}
+    >
+  ---
  * 
+ * - this is an imperative approach and using <NavLink /> and using "to" prop is a declarative approach
  * 
+ * >>> another use case:
+ * - moving back inside an application, where this hook is helpful
  * 
+ * - the function that was returned from useNavigate() hook.. is used to move one step backward
+ *    - that is we can specify inside as it's 
+ * ex:
+ * ---
+const navigate = useNavigate()
+onClick(() => navigate(-1))
+ *   
+ * - negative numbers indicate moving backwards
+ * - where positive numbers works vice-versa
  * 
+ * ! 12. Programmatic Navigation with <Navigate />
  * 
+ * - we now know how to navigate with useNavigate hook
+ * - but there is a declarative way of doing similar using "Navigate" component
  * 
+ * $ PROBLEM:
+ * - we have a problem that whenever user navigates to /app 
+ *    -  but it is not navigating automatically to "/app/cities".. but only navigates to "/app/cities" on-clicking "cities" btn inside "sidebar" of app-layout 
  * 
+ * >>> solution:
+ * - in order to fix this we have to use "Navigate" component to immediately and automatically navigate to URL: "/app/cities"
+ * ex:
+ * ---
+// automatic re-direction to "/app/cities" on navigating to "/app"
+<Route index element={<Navigate replace to="cities" />} />
  * 
- * 
- * 
- * 
- * 
- * 
- * 
+ * >>> replace:
+ * - but whenever we wanted to navigate back it will not navigate us to before page 
+ *    - so we have to use "replace" keyword that will take us back to previous page
  * 
  * 
  * 
