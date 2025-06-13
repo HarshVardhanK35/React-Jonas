@@ -25,8 +25,7 @@
 dispatch({type: inc, payload: 1})
  * 
  * - where "type" resembles type of action that has to be performed
- *      - 
- * 
+ *  
  * ex:
  * ---
 function reducer(state, action) {               // >>> reducer is a function.. 
@@ -257,20 +256,21 @@ const [state, dispatchFn] = useReducer(reducerFn, initialState)
  *      - and reducer will compute next state
  * 
  * $ Imp Note:
- * - as array.reduce(), 
+ * - similar to array.reduce(), 
  *      - react reducer also accumulates all "actions" into one "single-state"
  * 
- * >>> flow in "useReducer" 
- * 
+ * >>> flow in "useReducer"   
+ *                               computation of actions and curr. state
+ *                                        /
  * updating state       current     returned
  * in component         state     from reducer
  *     |              /             |
  * dispatch ----- reducer ----- next-state ----- re-render 
  *                  \       
  *                  actions
- *              from dispatch fun
+ *              (from dispatch fun)
  * 
- * >>> flow in "useState"
+ * >>> but flow in "useState"
  * 
  *      |--------updates--------|
  * setState     --------    next-state -------- re-render 
@@ -279,7 +279,7 @@ const [state, dispatchFn] = useReducer(reducerFn, initialState)
  *      state
  * 
  * ! 4. The "React Quiz" App
- * - mostly the setup of application
+ * - this lecture covers mostly the setup of an application
  * 
  * ! 5. Loading Questions from a Fake API
  * 

@@ -490,9 +490,8 @@ function Sidebar() {
   return (
     <div className={styles.sidebar}>
       <Logo />
-      <AppNav />
-      // - element inside child route is rendered with <Outlet />
-      <Outlet />
+      <AppNav /> 
+      <Outlet />              // >>> element inside child route is rendered with <Outlet />
       <footer className={styles.footer}>
         <p className={styles.copyright}>
           &copy; Copyright {new Date().getFullYear()} by WorldWise Inc.
@@ -524,12 +523,11 @@ export default Sidebar;
  * ex:
  * ----
 <Route path="app" element={<AppLayout />}>
-<Route index element={<p>List of cities</p>} />
-<Route path="cities" element={<p>List of cities</p>} />
-<Route path="countries" element={<p>Countries</p>} />
-<Route path="form" element={<p>Form</p>} />
+  <Route index element={<p>List of cities</p>} />
+  <Route path="cities" element={<p>List of cities</p>} />
+  <Route path="countries" element={<p>Countries</p>} />
+  <Route path="form" element={<p>Form</p>} />
 </Route>
- * 
  * 
  * - whenever we visit URL: "/app/cities" and visit back to "/app" only
  *    - then we need a default route.. so we set up /app to render cities also on default
@@ -580,11 +578,11 @@ Route:
  * 
  * ! 8. Storing State in the URL
  * 
- * ? Storing state in URL ???
+ * ? Storing GLOBAL state in URL ???
  *    ? don't we actually use "useState- Hook" to manage state ?
  * 
  * - that's true most of the time 
- *    - but URL is also a best place to store state (especially the UI state)
+ *    - but URL is also a best place to store GLOBAL - state (especially the UI state)
  
 * >>> UI State: 
  *    - state that affects the UI appearance (UI looks like) 
@@ -603,7 +601,7 @@ Route:
  * - we used to store state inside parent and then pass it to all it's children 
  *    - using "props"
  * 
- * >>> like movement of "STATE-MANAGEMENT" from react to URL
+ * >>> Movement of "STATE-MANAGEMENT" from REACT-LOGIC to app's URL
  * 
  * - if we do place state in URL, 
  * #1 we can read the value from there.. wherever the component is present in the component tree.
@@ -617,7 +615,7 @@ Route:
  * 
  * ? How can we do this with "React-Router" ?
  * ex:
- * - www.example.com/app/cities/lisbon?lat=38.724$lang=-9.141
+www.example.com/app/cities/lisbon?lat=38.724$lang=-9.141
  * 
  * - from the above URL, 
  *    - /app/cities => consider this part as state (it corresponds to the component that is being rendered)
@@ -630,6 +628,9 @@ Route:
  *    
  * #2 query-string:
  *    - this is useful to store global state.. that should be accessible from everywhere
+ * ex:
+ * ---
+www.example.com/app/cities/lisbon?lat=38.724$lang=-9.141
  * 
  * $ NOTE:
  * - from the above example, 
@@ -743,7 +744,7 @@ const lat = searchParams.get("lat");
 console.log(lat);
  * 
  * >>> Updating the Query String:
- * - use setSearchParams function
+ * - use "setSearchParams" function returned from "useSearchParams()"
  * ex:
  * ---
 import { useSearchParams } from "react-router-dom";
@@ -851,109 +852,6 @@ onClick(() => navigate(-1))
  * >>> replace:
  * - but whenever we wanted to navigate back it will not navigate us to before page 
  *    - so we have to use "replace" keyword that will take us back to previous page
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * '
- * '
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
  * 
  * 
  * 
