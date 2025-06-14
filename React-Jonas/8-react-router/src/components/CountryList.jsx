@@ -3,7 +3,13 @@ import styles from "./CountryList.module.css";
 import Message from "./Message";
 import Spinner from "./Spinner";
 
-function CountryList({ cities, isLoading }) {
+// useContext() import here...
+import { useCities } from "../context/CitiesContext";
+
+function CountryList() {
+  // using context instead of props..
+  const { cities, isLoading } = useCities();
+
   if (isLoading) return <Spinner />;
 
   if (!cities.length)
@@ -21,7 +27,7 @@ function CountryList({ cities, isLoading }) {
   return (
     <ul className={styles.countryList}>
       {countries.map((country) => (
-        <CountryItem country={country} key={country.country}/>
+        <CountryItem country={country} key={country.country} />
       ))}
     </ul>
   );

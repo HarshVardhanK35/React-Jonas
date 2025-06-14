@@ -1,10 +1,8 @@
 // ! ADVANCED STATE MANAGEMENT: CONTEXT API
 // ----------------------------------------
 /**
- * 
  * $ REMEMBER:
  * - Make sure to "import" every hook from the "react" 
- * 
  * 
  * ! 1. CHALLENGE #1: Understand "The Atomic Blog" App
  * 
@@ -95,19 +93,19 @@
  *      - that all the components that read the value passed from the CONTEXT PROVIDER
  * (we have now a new way of component instances can be re-rendered)
  * 
- * - till now we knew, state updates can re-render a comp. inst., but now update in context, update of value can also re-renders a component 
+ * - till now we knew, state updates can re-render a comp. instance, but now update in context and update of context's value can also re-renders a component 
  * (only until that comp. subscribed to that context provider)
  * 
- *      ---- (PROVIDER): value --
- *      |         /             |
- *      |      APP              |   
- *      |   |-------|           |
- *      |   A       C----       |
- *      |   |       |   |       |
- *      --> B       |   |       |
- *  (Consumer: B)   D   E       |
- *                      |       |
- *                    - F <------
+ *      ---- (PROVIDER): value ---
+ *      |         /              |
+ *      |      APP               |   
+ *      |   |-------|            |
+ *      |   A       C----        |
+ *      |   |       |   |        |
+ *      --> B       |   |        |
+ *  (Consumer: B)   D   E        |
+ *                      |        |
+ *                    - F <-------
  *              (Consumer: F)
  * 
  * ! 3. Creating and Providing a Context
@@ -126,13 +124,13 @@
  * ---
 const PostContext = createContext()
  * 
- * - PostContext starts with "capital" cause it is a component 
+ * - PostContext starts with "capital" because it is a component 
  * 
  * $ NOTE:
  * - always leave this function empty cause the value if we provide does not change over-time
  * 
  * #2 using "PostContext" component (making a PARENT- COMPONENT)
- * (have to use that comp., access ".Provider" on it)
+ * (if we have to use that component, then access ".Provider" property on it)
 <PostContext.Provider>
 ...
 </PostContext.Provider>
@@ -141,27 +139,20 @@ const PostContext = createContext()
  * ex:
  * ---
 return (
-    <PostContext.Provider>
-        <section>
-        <button
-            onClick={() => setIsFakeDark((isFakeDark) => !isFakeDark)}
-            className="btn-fake-dark-mode"
-        >
-            {isFakeDark ? "☀️" : "🌙"}
-        </button>
-
-        <Header
-            posts={searchedPosts}
-            onClearPosts={handleClearPosts}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-        />
-        <Main posts={searchedPosts} onAddPost={handleAddPost} />
-        <Archive onAddPost={handleAddPost} />
-        <Footer />
-        </section>
-    </PostContext.Provider> 
-    ...
+  <PostContext.Provider>
+    <section>
+      <Header
+          posts={searchedPosts}
+          onClearPosts={handleClearPosts}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+      />
+      <Main posts={searchedPosts} onAddPost={handleAddPost} />
+      <Archive onAddPost={handleAddPost} />
+      <Footer />
+    </section>
+  </PostContext.Provider> 
+  ...
 )
  * 
  * - while providing data to child components...
@@ -176,17 +167,17 @@ return (
  * ---
 function App(
   return (
-        <PostContext.Provider 
-            value={{
-                posts: searchedPosts,               |
-                onAddPost: handleAddPost,           |
-                onClearPosts: handleClearPosts      | //- data we want to send to children components
-                searchQuery: searchQuery,           |
-                setSearchQuery: setSearchQuery,     | 
-            }}
-        >
-            ...
-        </PostContext.Provider>
+    <PostContext.Provider 
+      value={{
+          posts: searchedPosts,               |
+          onAddPost: handleAddPost,           |
+          onClearPosts: handleClearPosts      | //- data we want to send to children components
+          searchQuery: searchQuery,           |
+          setSearchQuery: setSearchQuery,     | 
+      }}
+    >
+      {children-components}     //- children components goes here!
+    </PostContext.Provider>
     ...
     )
 )
@@ -202,15 +193,16 @@ function App(
  * - we need to read the data that was being sent from the Context-Provided (the "value" prop)
  *      - we need another hook to perform this functionality
  * 
- * * useContext
+ * * useContext - Hook
  * - to consume the context that has been created which is "PostContext"
  * 
- * - using of this hook has to be done inside component which require props and components which been a victim to the problem: "prop drilling" 
+ * - using of this hook has to be done inside component which require props and components that are sent via context
+ *    - which also a victim to the problem: "prop drilling" 
  * 
- * >>> Demonstrating every step here from creating context to consuming context
+ * >>> Demonstrating every step here from creating context - hook to consuming context
  * ex:
  * ---
-// - App component before "Context-API" 
+// #1 App component before "Context-API" 
 function App() {
   return (
     <PostContext.Provider
@@ -285,7 +277,7 @@ return (
 
 function Header() {
   // 3. CONSUMING CONTEXT
-  const { onClearPosts } = useContext(PostContext);            // - using useContext to consume here!
+  const { onClearPosts } = useContext(PostContext);            // - using useContext - hook to consume here!
   return (
     <header>
       <h1>
@@ -301,7 +293,7 @@ function Header() {
 }
 
 function SearchPosts() {
-  const { searchQuery, setSearchQuery } = useContext(PostContext);      // - using useContext to consume here!
+  const { searchQuery, setSearchQuery } = useContext(PostContext);      // - using useContext - hook to consume here!
   return (
     <input
       value={searchQuery}
@@ -312,7 +304,7 @@ function SearchPosts() {
 }
 
 function Results() {
-  const { posts } = useContext(PostContext);            // - using useContext to consume here!
+  const { posts } = useContext(PostContext);            // - using useContext - hook to consume here!
   return <p>🚀 {posts.length} atomic posts found</p>;
 }
  * 
@@ -512,11 +504,12 @@ function usePosts() {
  * - from lecture.. 
  * 
  * >>> Fundamentals of state management
- * - we had a talk on "when to use state", "types of state (accessibility)" and a lot more...
+ *    - in this lecture,
+ *      - we had discussed about "when to use state", "types of state (accessibility- state)" and a lot more before...
  * 
- * >>> In this lecture... 
- * - we discuss, 
- * #1 Types of state (domain): UI or remote
+ * >>> Now, in this lecture... 
+ * - we discuss.. 
+ * #1 Types of state (domain- type): UI or remote
  * #2 where to place each piece of state
  * #3 Tools used to manage all types of state
  * 
@@ -525,25 +518,25 @@ function usePosts() {
  * 
  * * accessibility:
  *      ? local:    
- *          - needed by only one or few components 
- *          - access inside components where state is defined
+ *          - required by only one or few components 
+ *          - accessible only inside those components where state is defined
  * 
  *      ? global:   
- *          - needed by many components 
+ *          - required by many components 
  *          - accessible to every component inside app
  * 
  * ? still confused while creating local and global states
  * ---
- * >>> ask: if this component was rendered "twice", should a state update in one of them reflect in the other one?
- *      - if no, use local state
- *          - else, use global state
+ * >>> ask: if this component was rendered "twice", should a state update in one of them reflect in another component?
+ *      - if no, use "local" state
+ *          - else, use "global" state
  * 
- * * domain:
+ * * Domain:
  * - types are: remote and UI
  *      ? remote:
  *          - all application data that is loaded from a remote server (an API)
  *          - usually asynchronous
- *          - needs re-fetching and updating
+ *          - needs re-fetching and updating (may be always)
  * 
  *      ? UI:
  *          - everything else (basically)
@@ -552,33 +545,32 @@ function usePosts() {
  * 
  * ? where to place state in a code ?
  * ---
- * ? where to place state  ||           --- tools used ---              ||     --- when to use ---
- * - at local comp.,       ||   useState, useReducer and useRef         ||         Local state
- * - at parent comp.,      ||  useState, useReducer & useRef            ||        Lifting state 
- * - at context            ||  Context API with useState or useReducer  || Global state(preferably UI state)
+ * ? where to place state  ||         --- tools to be used ---          ||     --- when to use ---
+ * - at local comp.,       ||      useState, useReducer and useRef      ||        local state
+ * - at parent comp.,      ||       useState, useReducer & useRef       ||       lifting state 
+ * - at context            ||  Context API with useState or useReducer  || global state(preferably UI state)
  * - 3rd party lib         ||  Redux, React Query, SWR, Zustand etc.,   ||    global state (remote or UI)
- * - URL                   ||           React Router                    ||  global state, pass between pages
- * - Browser               ||       Local or session storage            || storing data in user's browser 
+ * - URL                   ||                React Router               || global state, pass between pages
+ * - Browser               ||          Local or session storage         ||   storing data in user's browser 
  * 
  * $ Note:
- * - some of the external state management solutions are best suited for global remote and also for global UI state or for both state
- * - URL stored state can be easily shared and book-marked  
- * - similar to "useRef", Browser-stored state can not cause re-render in comp. instance
+ * - some of the external state management solutions are best suited for global remote or for global UI state or may be for both state
+ * - URL stored state (: is global) can be easily shared and book-marked  
+ * - similar to "useRef", Browser-stored state can not cause re-render in a comp. instance
  * 
  * ? how to manage different types of state in practice ?
- * 
  *                                                         STATE
  *            LOCAL UI STATE (Q1)                       ACCESSIBILITY                                 GLOBAL UI STATE (Q2)
  *                   \           LOCAL STATE                 |               GLOBAL STATE              /
- *                   |---------------------------------------|---------------------------------------   |
+ *                   |---------------------------------------|------------------------------------------|
  *                   |      => useState                      |  => Context API + useState / useReducer  |
  *      UI STATE >>> |      => useReducer                    |  => redux, zustand, recoil etc.,         |
  *                   |      => useRef                        |  => react router                         |
- * STATE             |--------------------------------------------------------------------------------  |
- * DOMAIN            |         fetch +                       |  => Context API + useState / useReducer  |
- *                   |  useEffect + useState/useReducer      |  => Redux, Zustand, recoil etc.,         |
+ * STATE           ------------------------------------------|---------------------------------------------
+ * DOMAIN            |                fetch +                |  => Context API + useState / useReducer  |
+ *                   |    useEffect + useState/useReducer    |  => Redux, Zustand, recoil etc.,         |
  *  REMOTE STATE >>> |                                       |  => react query, swr, rtk query          |
- *                   |--------------------------------------------------------------------------------  |
+ *                   |---------------------------------------|------------------------------------------|
  *                               /                                                      \
  *               LOCAL REMOTE STATE (Q3)                                                GLOBAL REMOTE STATE (Q4)
  * $ NOTE:
@@ -586,7 +578,7 @@ function usePosts() {
  *      - we have to use "fetch()" inside "useEffect"                           
  * - then store that as a state and manage it using "useState" or "useReducer" 
  * 
- * >>> only a good idea in small apps, in large applications we treat all remote state as global state
+ * >>> Q3 solution: it is only a good idea in small applications, in large applications we treat all remote states as global states
  * 
  * - Q4: global remote state.. 
  *      - tools that are highly specialized in handling remote state
@@ -598,6 +590,7 @@ function usePosts() {
  *      - can go with Context API + useState / useReducer
  *      - or else needed performance.. use redux, zustand, recoil like 3rd partly libraries
  * 
+ * ! 7. Back to "WorldWise": Creating a CitiesContext
  * 
  * 
  * 

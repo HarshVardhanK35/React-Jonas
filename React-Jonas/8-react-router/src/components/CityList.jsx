@@ -3,7 +3,13 @@ import styles from "./CityList.module.css";
 import Message from "./Message";
 import Spinner from "./Spinner";
 
-function CityList({ cities, isLoading }) {
+// getting "useCities" from context!
+import { useCities } from "../context/CitiesContext";
+
+function CityList() {
+  // using context here, instead of props..
+  const { cities, isLoading } = useCities();
+
   if (isLoading) return <Spinner />;
 
   if (!cities.length)
