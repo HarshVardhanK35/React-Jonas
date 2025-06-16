@@ -26,13 +26,13 @@ export function convertToEmoji(countryCode) {
 const BASE_URL = "https://api.bigdatacloud.net/data/reverse-geocode-client";
 
 function Form() {
-  const navigate = useNavigate();
-
   const [cityName, setCityName] = useState("");
   const [country, setCountry] = useState("");
   const [date, setDate] = useState(new Date());
   const [notes, setNotes] = useState("");
   const [emoji, setEmoji] = useState("");
+
+  const navigate = useNavigate();
 
   const [isLoadingGeocode, setIsLoadingGeocode] = useState(false);
   const [geocodeError, setGeocodeError] = useState("");

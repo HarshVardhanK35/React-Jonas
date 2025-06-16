@@ -777,6 +777,9 @@ export default Map;
  * - on-click updates lat and lng every where in the application
  *    - it not only updates inside "URL" but also everywhere in the app.. where this data is read!
  * 
+ * $ IMPORTANT:
+ * - everything fetched from the URL is of type: "string"
+ * 
  * ! 11. Programmatic Navigation with useNavigate Hook
  * 
  * >>> programmatic navigation means to move to a new URL without clicking on any link 
@@ -854,8 +857,12 @@ onClick(() => navigate(-1))
  *    - so we have to use "replace" keyword that will take us back to previous page
  * 
  * 
- * 
- * 
+ * $ REMEMBER:
+ * - we should not call "navigate" function from the top level code
+ *    - never
+ * ? why ?
+ * - it creates an effect
+ * - so whenever there is an effect, use "useEffect()" - Hook
  * 
  * 
  */

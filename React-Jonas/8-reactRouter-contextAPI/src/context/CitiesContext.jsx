@@ -131,7 +131,7 @@ const initialState = {
   cities: [],
   isLoading: false,
   currentCity: {},
-  error: ""
+  error: "",
 };
 
 // useReducer: reducer fn- center for all business logic
@@ -155,9 +155,9 @@ function reducer(state, action) {
       return {
         ...state,
         isLoading: false,
-        currentCity: action.payload
+        currentCity: action.payload,
       };
-    
+
     case "city/created":
       return {
         ...state,
@@ -165,16 +165,15 @@ function reducer(state, action) {
         currentCity: action.payload,
         cities: [...state.cities, action.payload],
       };
-    
+
     case "city/deleted":
       return {
         ...state,
         isLoading: false,
         currentCity: {},
         cities: state.cities.filter((city) => city.id !== action.payload),
-
       };
-    
+
     case "rejected":
       return {
         ...state,
@@ -198,50 +197,46 @@ function CitiesProvider({ children }) {
 
   useEffect(function () {
     async function fetchCities() {
+      dispatch({ type: "loading" });
       try {
-        dispatch({ type: "loading" });
-
         const res = await fetch(`${BASE_URL}/cities`);
         const data = await res.json();
 
         // setCities(data);
-        dispatch({type: "cities/loaded", payload: data})
+        dispatch({ type: "cities/loaded", payload: data });
         //
       } catch (err) {
         dispatch({
           type: "rejected",
           payload: `Error while fetching cities ${err}`,
-        }) 
-      } 
+        });
+      }
     }
     fetchCities();
   }, []);
 
   async function getCity(id) {
+    if (Number(id) === currentCity.id) return;
 
-    if(id === currentCity.id) return
-
+    dispatch({ type: "loading" });
     try {
-      dispatch({ type: "loading" });
-      
       const res = await fetch(`${BASE_URL}/cities/${id}`);
       const data = await res.json();
 
       // setCurrentCity(data);
-      dispatch({type: "city/loaded", payload: data})
+      dispatch({ type: "city/loaded", payload: data });
       //
     } catch (err) {
       dispatch({
         type: "rejected",
         payload: `Error while loading city ${err}`,
-      }); 
-    } 
+      });
+    }
   }
 
   async function createCity(newCity) {
+    dispatch({ type: "loading" });
     try {
-      dispatch({ type: "loading" });
-
       const res = await fetch(`${BASE_URL}/cities`, {
         method: "POST",
         body: JSON.stringify(newCity),
@@ -252,21 +247,20 @@ function CitiesProvider({ children }) {
       const data = await res.json();
 
       // setCities((cities) => [...cities, data]);
-      dispatch({type: "city/created", payload: data})
+      dispatch({ type: "city/created", payload: data });
       //
     } catch (err) {
       // alert(`Error while creating city ${err}`);
       dispatch({
         type: "rejected",
         payload: `Error while creating a city ${err}`,
-      }); 
-    } 
+      });
+    }
   }
 
   async function deleteCity(id) {
+    dispatch({ type: "loading" });
     try {
-      dispatch({ type: "loading" });
-
       await fetch(`${BASE_URL}/cities/${id}`, {
         method: "DELETE",
       });
@@ -274,15 +268,15 @@ function CitiesProvider({ children }) {
       if (!id) throw new Error("error while deleting city!");
       // we need all cities that are different from current "id" that was passed into it
       // setCities((cities) => cities.filter((city) => city.id !== id));
-      dispatch({type: "city/deleted", payload: id})
+      dispatch({ type: "city/deleted", payload: id });
       //
     } catch (err) {
       // alert(`Error while deleting city ${err}`);
       dispatch({
         type: "rejected",
         payload: `Error while deleting a city ${err}`,
-      }); 
-    } 
+      });
+    }
   }
 
   // Provider property on "CitiesContext"
@@ -343,32 +337,32 @@ export { CitiesProvider, useCities };
  * #1 pass state + dispatch fn..
  *    ... passing into context's value and we can use dispatch fn inside components (by importing..) to update the state at component's file
  * (as we have asynchronous data.. we cannot have all the clumsy logic inside reducer)
- *    
+ *
  *    ... so we have complete logic of asynchronous code inside component.jsx file
- * (in order perform this.. we have to pass into dispatch but not into the context.. then only we could write all data fetch logic inside that component) 
- * 
+ * (in order perform this.. we have to pass into dispatch but not into the context.. then only we could write all data fetch logic inside that component)
+ *
  * >>> to keep component logic nice and clean
  * ... we follow 2nd option
  * #2 not to pass dispatch fn into context..
- *    ... but instead to use inside event handler fn and then pass them as context's value 
+ *    ... but instead to use inside event handler fn and then pass them as context's value
  *    (like above code!)
- * 
+ *
  * $ NOTE:
  * ... but whenever we are not dealing with asynchronous data.. then it would be better to just pass dispatch fns and then create actions right inside components
- * 
- * 
- * 
+ *
+ *
+ *
  * $ UPDATE:
- * ... as soon as a city has been created, make that as currently active city 
+ * ... as soon as a city has been created, make that as currently active city
  *    ... case "city/created": has to be updated!
  *
  * ... and after deleting city, we have to set it to initial state! (city/deleted)
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
  */

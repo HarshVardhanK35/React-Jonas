@@ -251,7 +251,7 @@ function Header({ posts, onClearPosts, searchQuery, setSearchQuery }) {
  * ex:
  * ---
 // >>> 1) CONTEXT API: creation of "PostContext" with >>> createContext()
-const PostContext = createContext();
+const PostContext = createContext();      //- this don't need any initial value 
 
 function App() {
 return (
@@ -593,27 +593,256 @@ function usePosts() {
  * ! 7. Back to "WorldWise": Creating a CitiesContext
  * 
  * 
+ * ! 18. Adding Fake Authentication: Setting Up Context
+ * 
+ * - last feature of whole application.. 
+ *    - 
+ * 
+ * >>> How authentication works in a simple react (front-end) app
+ * - usually user-authentication works in three steps:
+ * 
+ * #1 get user's email and pwd
+ *    - get from a login form and check with an API endpoint (check if it is correct or not)
+ * 
+ * #2 redirection of user
+ *    - if credentials are correct then redirect user to main application
+ *      - save user object inside the state
+ * 
+ * #3 protect the app with un-authorized access
+ * 
+ * $ APPLICATION - LECTURE:
+ * >>> implementation of fake authentication:
+ *    - as we are implementing fake, we will not ask for user's credentials 
+ *        - but we will hard-code them
+ * 
+ * - creating context "FakeAuthContext.jsx" to give access to a state to the entire application tree
+ *    - this file has been created inside "8-reactRouter-contextAPI" folder
+ * 
+ *    - follow the file for more details and explanation in that file!
  * 
  * 
+ * $ NOTE:
+ * - will implement real-one in future lectures
+ * 
+ * ! model of Context-API and useReducer
+ * 
+ * - this model / blue-print was used to create Authentication (Fake) to app with context-api and useReducer:   
+ * ex:
+ * ---
+import { useReducer, createContext, useContext } from "react";
+
+const initialState = {
+  user: null,
+  isAuthenticated: false,
+};
+function reducer(state, action) {
+  switch (action.type) {
+    case "login":
+      return {
+        ...state,
+        user: action.payload,
+        isAuthenticated: true,
+      };
+    case "":
+      return {
+        ...state,
+        user: null,
+        isAuthenticated: false, // or we could return "initialState" here!
+      };
+    default:
+      throw new Error("Unknown action type found!");
+  }
+}
+
+const AuthContext = createContext();
+
+// (hardcoded) fake-user details... brought from /components/User.jsx
+const FAKE_USER = {
+  name: "Jack",
+  email: "jack@example.com",
+  password: "qwerty",
+  avatar: "https://i.pravatar.cc/100?u=zz",
+};
+function AuthProvider({ children }) {
+  //  
+  // 1-state: containing user object
+  // 2-state: stores whether current user- authenticated or not
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const { user, isAuthenticated } = state;
+
+  function login(email, password) {
+    if (email === FAKE_USER.email && password === FAKE_USER.password)
+      dispatch({ type: "login", payload: FAKE_USER });
+  }
+  function logout() {
+    dispatch({ type: "logout" });
+  }
+
+  return (
+    <AuthContext.Provider
+      value={{
+        user: user,
+        isAuthenticated: isAuthenticated,
+        login: login,
+        logout: logout,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+}
+function useAuth() {
+  const context = useContext(AuthContext);
+  if (context === undefined)
+    throw new Error("AuthContext was used outside the AuthProvider");
+
+  return context;
+}
+export { AuthProvider, useAuth };   //- shall be imported in other file where we have login and logout button
  * 
  * 
+ * ! 19. Adding Fake Authentication: Implementing "Login"
+ * 
+ * - the AuthProvider that was exported here must have to be used inside "App.jsx" to wrap up all the components..
+ *    - so that every component inside react component tree will get access to the states that were set while developing context: "AuthContext"
+ * ex:
+ * ---
+function App() {
+  return( 
+    <AuthProvider>
+      <CitiesProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route index element={<HomePage />} />
+            <Route path="product" element={<Product />} />
+            <Route path="pricing" element={<Pricing />} />
+            <Route path="login" element={<Login />} />
+            <Route path="app" element={<AppLayout />}>
+              <Route index element={<Navigate replace to="cities" />} />
+              <Route path="cities" element={<CityList />} />    
+          </Routes>
+        </BrowserRouter>
+      </CitiesProvider>
+    </AuthProvider>
+  )
+}
+ * 
+ * - inside opening tags of <CitiesProvider> and <AuthProvider> components which provide-context are the {children} 
+ * 
+ * $ NOTE: 
+ * - now we can easily pass props to these components (without any props drilling problem)
+ * 
+ * >>> Login.jsx setup:
+ * ex:
+ * ---
+export default function Login() {
+  const navigate = useNavigate();
+
+  // PRE-FILL FOR DEV PURPOSES
+  const [email, setEmail] = useState("jack@example.com");
+  const [password, setPassword] = useState("qwerty");
+
+  const { login, isAuthenticated } = useAuth();
+
+  function handleLogin(e) {
+    e.preventDefault();
+    if (email && password) login(email, password);
+  }
+
+  // whenever isAuthenticated changes to true.. we have to listen and redirect the user
+  useEffect(
+    function () {
+      if (isAuthenticated) navigate("/app", { replace: true });
+    },
+    [isAuthenticated, navigate]
+  );
  * 
  * 
+ * ! 20. Adding Fake Authentication: Protecting a Route
+ * (making un-authorized users not to access pages: protecting application)
  * 
+ * - making them to redirecting to /Home page, whenever they are accessing routes that they should not!
+ *    - only when they are not logged in 
  * 
+ * >>> Common Practice:
+ * - creating a component which will handle redirecting 
+ * - which also should wrap entire application into that component!
  * 
+ * #1 creating component:
+ * ex:
+ * ---
+function ProtectedRoute({ children }) {
+  return children
+}
+export default ProtectedRoute;
  * 
+ * - this shall only return children components that were passed into it!
  * 
+ * #2 adding protection:
+ * (checking if user is authenticated or not!)
+ * ex:
+ * ---
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/FakeAuthContext";
+
+function ProtectedRoute({ children }) {
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(
+    function () {
+      if (!isAuthenticated) navigate("/");
+    },
+    [isAuthenticated, navigate]
+  );
+  return isAuthenticated ? children : null;
+}
+export default ProtectedRoute;
  * 
+ * #3 wrapping components or an entire application into "ProtectedRoute"
  * 
+ * - as this application, have <AppLayout> so we can wrap that into "ProtectedRoute"
  * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
+ * - but best is to use in "App.jsx" and wrap only "AppLayout" (as per this app)
+ *    - or routes which needed protection into it
+ *    - where we defined all the routes that are used inside app
+ * ex:
+ * ---
+import ProtectedRoute from "./pages/ProtectedRoute";
+
+function App() {
+  return (
+    <AuthProvider>
+      <CitiesProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route index element={<HomePage />} />
+            <Route path="product" element={<Product />} />
+            <Route path="pricing" element={<Pricing />} />
+            <Route path="login" element={<Login />} />
+            <Route
+              path="app"
+              element={
+                <ProtectedRoute>
+                  <AppLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<Navigate replace to="cities" />} />  //- automatic redirect to /app/cities 
+              <Route path="cities" element={<CityList />} />
+              <Route path="cities/:id" element={<City />} />        //- used params: id here 
+              <Route path="countries" element={<CountryList />} />
+              <Route path="form" element={<Form />} />
+            </Route>             
+            <Route path="*" element={<PageNoteFound />} />   //- path "*": works for all other routes, other than above specified routes 
+          </Routes>
+        </BrowserRouter>
+      </CitiesProvider>
+    </AuthProvider>
+  );
+}
+export default App;
  * 
  * 
  * 
