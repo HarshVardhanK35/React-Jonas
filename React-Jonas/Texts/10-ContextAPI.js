@@ -844,82 +844,32 @@ function App() {
 }
 export default App;
  * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
+ * ! 9 challenge: Refactoring "React Quiz" to Context API
+ * 
+ * YOUR TASKS
+ * ------------
+ * 1. Duplicate src folder to src-no-context
+ * 2. Review data flow and passed props
+ * 3. Identify prop drilling problem
+ * 4. Use the Context API to fix the (very small) prop drilling problem
+ * 5. Create a new context QuizContext with the reducer we created earlier
+ * 6. Create a custom provider component QuizProvider and provide all the state to the app
+ * 7. Create a custom hook to consume state all over the application
+ * 8. Delete all unnecessary props
+ * 9. IMPORTANT: Note how you actually need state right in App component. This means you need to wrap the whole App into the context (HINT: try in index.js)
+ * 
+ * - till now we have not sent the dispatch fn from context-file to the logic inside App.js
+ *    - but we did here.. 
+ *    
+ * - cause we are using asynchronous code there inside "WorldWise App" 
+ *    - but there is no asynchronous code inside "React-Quiz App"
+ * 
+ * 
+ * 
+ * >>> GitHub: https://github.com/HarshVardhanK35/React-Max-n-Jonas/tree/main/React-Challenges
+ * (check out the code inside "/9Ch-react-quiz-contextAPI")
+ * 
+ * - more details and code of other files inside above GitHub repository 
  * 
  * 
  * 
