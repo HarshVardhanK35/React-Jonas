@@ -159,9 +159,11 @@ extends: [
  * - changing the URL, trigger the update inside DOM as a result 
  *    - JS (react) code updates the DOM
  * 
+ * >>> DOM Update:
  * - so normally, page re-loading happens when user clicks on a link
  *    - but with react, DOM will be "updated" 
- *
+ * 
+ * (react component corresponding to that URL is rendered)
  * - So no page will be reloaded, only updates are done with "REACT"
  *    - that is // => an entire app in one page
  * 
@@ -219,7 +221,8 @@ export default App;
  *    - <Product /> into element={<Product />}
  * - so that we can pass in props into that element 
  * 
- * - till now with this set-up.. we are routing through components by manually changing URLs
+ * - till now..
+ *    - with this set-up.. we are routing through components by manually changing URLs
  * 
  * >>> but we need single-page app, so we need links (linking pages)
  *    - gonna learn this in next topic 
@@ -319,13 +322,13 @@ function PageNav() {
         ... other links ...
       </ul>
     </nav>
-  );
+  ); 
 }
 
 export default PageNav;
  * 
  * - by using this "NavLink".. we get a CSS class attached to every element
- *    - whenever we are on that page.. that class will be assigned to "active"
+ *    - whenever we are on that page.. that page gets class and it will be assigned to "active"
  *    => class="active"
  * 
  * - all other links will not get "active" as class-value
@@ -595,7 +598,7 @@ Route:
  * 
  * ? why should do so ?
  *  
- * - it is an easy way to store state in "global-place", accessible to all components in the application
+ * - it is an easy way to store state in "global-place", accessible to all components in the application (all elements inside element-tree)
  *    
  * $ REMEMBER:
  * - we used to store state inside parent and then pass it to all it's children 
@@ -611,7 +614,7 @@ Route:
  * 
  * #3 to "Bookmark and share" the page with exact UI state.. it had at that time (while marking)  
  *    - if we applied filter to an online shop app, when we share that to someone 
- *      - then, they can also view same filters that we applied 
+ *      - then, other users can also view same filters that we applied 
  * 
  * ? How can we do this with "React-Router" ?
  * ex:

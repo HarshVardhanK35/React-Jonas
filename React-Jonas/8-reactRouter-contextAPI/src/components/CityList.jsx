@@ -1,7 +1,7 @@
 import CityItem from "./CityItem";
 import styles from "./CityList.module.css";
-import Message from "./Message";
 import Spinner from "./Spinner";
+import Message from "./Message";
 
 // getting "useCities" from context!
 import { useCities } from "../context/CitiesContext";
