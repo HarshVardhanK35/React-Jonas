@@ -1,4 +1,4 @@
-import { useState, createContext, useContext } from "react";
+import { createContext, useContext, useState } from "react";
 
 import { faker } from "@faker-js/faker";
 
@@ -9,20 +9,15 @@ function createRandomPost() {
   };
 }
 
-// CONTEXT API
 const PostContext = createContext();
 
 function PostProvider({ children }) {
-  // callback inside "useState" runs only on initial render
   const [posts, setPosts] = useState(() =>
-    Array.from({ length: 10 }, () => createRandomPost())
+    Array.from({ length: 30 }, () => createRandomPost())
   );
-  // console.log(posts)
-
   const [searchQuery, setSearchQuery] = useState("");
 
   // Derived state. These are the posts that will actually be displayed
-  // BLOG: titles and posts gets filtered with "searchQuery"
   const searchedPosts =
     searchQuery.length > 0
       ? posts.filter((post) =>
@@ -33,7 +28,7 @@ function PostProvider({ children }) {
       : posts;
 
   function handleAddPost(post) {
-    setPosts((posts) => [...posts, post]);
+    setPosts((posts) => [post, ...posts]);
   }
 
   function handleClearPosts() {
@@ -58,7 +53,7 @@ function PostProvider({ children }) {
 function usePosts() {
   const context = useContext(PostContext);
   if (context === undefined)
-    throw new Error("PostContext was used outside of the PostProvider");
+    throw new Error("Post-Context was used outside of the Post-Provider");
   return context;
 }
 

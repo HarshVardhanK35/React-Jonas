@@ -67,7 +67,8 @@
  *      - state that should be available to all the child components of a certain context
  *
  * - to understand it better.. 
- *             
+ *             state
+ *               |
  *          |---APP---|
  *          A         |
  *          |     |---C---|
@@ -102,10 +103,10 @@
  *      |   |-------|            |
  *      |   A       C----        |
  *      |   |       |   |        |
- *      --> B       |   |        |
+ *     +--> B       |   |        |
  *  (Consumer: B)   D   E        |
  *                      |        |
- *                    - F <-------
+ *                      F <------+
  *              (Consumer: F)
  * 
  * ! 3. Creating and Providing a Context
@@ -309,7 +310,7 @@ function Results() {
 }
  * 
  * ! 5. Advanced Pattern: A Custom Provider and Hook
- * (encapsulation of context api >>> OPTIONAL)
+ * (encapsulation of context api >>> IMPORTANT)
  * 
  * - till now what we did with context API is enough.. 
  * 
@@ -434,7 +435,7 @@ function App() {
     </section>
   );
 }
-// --- Only Header - component
+// --- Only Header - component (DEMONSTRATION)
 function Header() {
   // 3. CONSUMING CONTEXT
   const { onClearPosts } = usePosts();
@@ -486,6 +487,9 @@ function App() {
     <Footer />
 </PostProvider>
  * 
+ * - we used usePosts() outside of the context provider.. that it is not available to children inside "PostProvider" component
+ *    - so this would return a value: "undefined"
+ * 
  * - so we throw an error.. 
  * - inside file where we wrote code that separates and encapsulates Context-API and useContext Hook from main application!
  * ex:
@@ -493,7 +497,7 @@ function App() {
 function usePosts() {
   const context = useContext(PostContext);
   if (context === undefined)                    // >>> throwing an error here!
-    throw new Error("PostContext was used outside of the PostProvider");
+    throw new Error("PostContext was used outside of the PostProvider");    //- this message conveys what happened when we use usePosts() outside context-provider
   return context;
 }
  * 

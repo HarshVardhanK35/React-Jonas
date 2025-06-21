@@ -777,7 +777,7 @@ function Map() {
 }
 export default Map;
  * 
- * - on-click updates lat and lng every where in the application
+ * - on-click updates lat and lng every where in the application (element-tree )
  *    - it not only updates inside "URL" but also everywhere in the app.. where this data is read!
  * 
  * $ IMPORTANT:
@@ -859,13 +859,12 @@ onClick(() => navigate(-1))
  * - but whenever we wanted to navigate back it will not navigate us to before page 
  *    - so we have to use "replace" keyword that will take us back to previous page
  * 
- * 
  * $ REMEMBER:
  * - we should not call "navigate" function from the top level code
- *    - never
+ * 
  * ? why ?
  * - it creates an effect
- * - so whenever there is an effect, use "useEffect()" - Hook
+ * - so whenever there is an effect, use "useEffect()" - Hook 
  * 
- * 
+ * ! DOUBT: url and useParams()
  */
