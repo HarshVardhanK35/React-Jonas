@@ -781,19 +781,99 @@ export { createCustomer, updateCustomer };
  * -------------------------------------------------------
  * (connection of redux-store with react-application)
  * 
+ * * Connection Redux and React
+ * ---
+ * - to complete that connection.. we need a new package 
+ *      - with this new package redux and react applications can communicate with each other
+ * => npm i react-redux
  * 
+ * - this works as context-api
+ * >>> [import {Provider} from "react-redux"]
  * 
+ * - so that we can wrap our entire application into that "Provider" 
+ *      - similar to wrapping components with "Context.Provider"
  * 
+ * $ NOTE:
+ * - exported "store" will be imported into "index.js" and it will be the "prop" for "Provider" 
  * 
+ * >>> connection shown below..
+ * ex:
+ * ---
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { Provider } from "react-redux";     //- Package: imported here
+
+import App from "./App";
+import store from "./store";        //- store: import
+
+import "./index.css";
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(
+  <React.StrictMode>
+    <Provider store={store}>        //>>> resembles <Context.Provider value={{}}> with "value" prop
+      <App />
+    </Provider>
+  </React.StrictMode>
+);
  * 
+ * - now every react-element inside "App" can now read data from "store" and.. 
+ *      - "dispatch" actions to "store"
+ * (similar to the behavior that we used to have with Context-API)
+ * >>> Broadcasting Global-State into every component of the react-application
  * 
+ * * Reading State
+ * ---
+ * - to read data from "redux-store"
+ *      - we have to use.. 
+ * => useSelector() Hook
  * 
+ * >>> useSelector Hook
+ * - this takes a call-back fun and..
+ * code shown below.. 
+ * ex:
+ * ---
+// => react-component
+import { useSelector } from "react-redux";
+
+function Customer() {
+  const customer = useSelector((store) => store.customer); // >>> reading redux-store-data
+  return <h2>👋 Welcome, %NAME%</h2>;
+}
+export default Customer;
  * 
+ * - the "store.customer" has to be exactly equal to the "name" we provided inside "store"
+ * ex:
+ * ---
+// => redux-store
+import { combineReducers, createStore } from "redux";
+
+import accountReducer from "./features/accounts/accountSlice";
+import customerReducer from "./features/customers/customerSlice";
+
+const rootReducer = combineReducers({
+  account: accountReducer,
+  customer: customerReducer,    // >>> same name
+});
+
+const store = createStore(rootReducer);    // >>> create a store using method: "createStore" from "redux"
+
+export default store;
  * 
+ * $ EXPLANATION:
+ * - useSelector() creates a "SUBSCRIPTION" to the redux-store
+ * - whenever "store" changes.. then component subscribed to, will "re-render"
  * 
- * 
- * 
- * 
+ * >>> Final_Code:
+ * ex:
+ * ---
+import { useSelector } from "react-redux";
+
+function Customer() {
+  const customer = useSelector((store) => store.customer.fullName);
+  return <h2>👋 Welcome, {customer}</h2>;
+}
+export default Customer;
  * 
  * 
  * 
