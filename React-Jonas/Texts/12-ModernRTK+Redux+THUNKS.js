@@ -44,7 +44,7 @@
  * (type and payload has the information about how to update the state)
  * 
  * - we then "dispatch" that "action" to a "reducer" function
- *      - "reducer" fn which takes "action-type" and "payload" and with "current-state" calculates the "next-state"
+ *      - "reducer" fn which takes "action-type" and "payload" and with "current-state" lying inside it, calculates the "next-state"
  * (state updates are only happen at reducer-function)
  * 
  * - with the state transition.. the components connected to the state will re-render
@@ -59,7 +59,7 @@
  * - "store" where one or multiple reducers lives 
  *
  * * redux state flow (SKETCH)
- *              ACTION: type + payload ------------------------------------------ action traveling
+ *              ACTION: type + payload -----------------------------------------+ action travels
  *              /                                                               |
  * event handler                                                                |
  *  component       ---------------------------------       DISPATCH            |
@@ -69,10 +69,11 @@
  *                                                        |reducer-1 |          |
  *                                                        |reducer-2 |          |
  *                                                        |   ...    |          |
- *                                                        |reducer-n | ACTION: type + payload
- *                                                        |    +     |   /
- *                                                        | Current  |  / 
- *          re-render -----------  next state  --------   |  state   |
+ *                                                        |reducer-n |    ACTION: type + payload
+ *                                                        |    +     |  /
+ *                                                        | CURRENT  | / 
+ *                                                        |  STATE   |/
+ *           re-render -----------  next state  --------  |          |
  *
  * - reducer must be pure function 
  *      - calculates "next-state" based on the "action" dispatched to the store 
@@ -98,7 +99,7 @@
  *              ACTION: type + payload ------------------------------------------ action traveling
  *              /                                                               |
  * event handler                                                                |
- *  component       ----------- Action creators ----------- DISPATCH            |
+ *  component       --------- Action creators fns --------- DISPATCH            |
  *                                                             |                |
  *                                                           STORE              |
  *                                                        |----------|          |
@@ -124,8 +125,8 @@
  * 
  * ! 3. Creating a Reducer: Bank Account
  * -------------------------------------
- * (learning redux in isolation first)
- * - created a react app "redux-intro" and a file in it store.js
+ * (learning redux in isolation first / a classic redux)
+ * - created a react app "redux-intro" and a file in it called "store.js"
  * 
  * >>> inside store.js:
  * - where all the reducer functions and current state code lies 
@@ -194,7 +195,7 @@ function accountReducer(state = initialStateAccount, action) {
  * $ NOTE:
  * (we get a strike-through over imported "createStore")
  * - cause that method is "deprecated"
- * - as we are learning "CLASSIC-REDUX" (OR) Olden-Redux
+ * - as we are learning "CLASSIC-REDUX" (OR) Old-Redux
  *      - but we have modern way of writing same methods 
  * 
  * >>> redux with no action-creators:
@@ -257,7 +258,7 @@ store.dispatch({ type: "account/payLoan" });
 console.log(store.getState());
  * 
  * $ REMEMBER:
- * - we don't create an action-types as shown in the above code
+ * - we don't create action-types as shown in the above code
  *      - but instead we create an "action-creator" to automate the process of state updates
  * 
  * - as in redux, we don't "dispatch" actions directly to reducer.. but to the "store"
@@ -548,7 +549,7 @@ const rootReducer = combineReducers({
  * (as we should not have side-effects inside reducer fns)
  * 
  * => next lecture:
- * - as there are two state and their updating logics.. it is best to split the code
+ * - as there are two state and their updating logics.. it is best to split the code (state-slice)
  * 
  * 
  * 
@@ -562,12 +563,14 @@ const rootReducer = combineReducers({
  * - devs created a reducer-folder, and then create one file for every reducer functions
  *      - similarly for action-creators (action-creator folder and one file for every action-creator)
  * 
- * - but this way of organizing code lead to lot of jumping between every folder and file 
+ * - but this way of organizing code lead to lots of jumping between every folder and file 
  * (this is done in older_code_base) >>> (which is not recommended!)
  * 
  * >>> modern_way:
+ * - in this way, we use a more modern folder and file organizing!
+ * 
  * >>> (folder structure) BEFORE.. 
- * - before using featured folder structure
+ * - before using "featured" folder structure
 10-redux-intro
 |
 ├─── node_modules
@@ -586,14 +589,14 @@ const rootReducer = combineReducers({
 ├─── package.json
 └─── README.md
  * 
- * - we now organize our code into features
+ * - we now organize our code into.. // >>> "features"
  * - if we have a "bank_application"
  *      - (we shall have two features: account_feature & customer_feature)
  * 
- * - customer-specific actions and code will have to come under "customer_feature" files and similarly with "account_feature"
+ * - customer-specific actions and code comes under "customer_feature" folder and similarly with "account_feature" folder
  * 
  * >>> (folder structure) AFTER.. 
- * - after using modern folder structure
+ * - after using modern folder structure with "features"
  * ex:
  * ---
 10-redux-intro
@@ -621,11 +624,11 @@ const rootReducer = combineReducers({
 └─── README.md
  * 
  * 
- * - we have created a separate file for redux for both features here
+ * - we have created a separate file for redux for both features here.. using //=> slice
  * 
  * >>> slice:
- * - accountSlice.js and customerSlice.js for each feature
- * - SLICE >>> a piece of total state 
+ * - "accountSlice.js" and "customerSlice.js" for each feature
+ * - "SLICE" >>> a piece of state extracted from total state!
  * 
  * >>> code separated files:
  * ex:
@@ -635,7 +638,8 @@ import { combineReducers, createStore } from "redux";
 import accountReducer from "./features/accounts/accountSlice";
 import customerReducer from "./features/customers/customerSlice";
 
-// - combining more "reducers"
+// - combining more "reducers" 
+//=> combineReducers()
 const rootReducer = combineReducers({
   account: accountReducer,
   customer: customerReducer,
@@ -766,14 +770,13 @@ export { createCustomer, updateCustomer };
 
 //- dispatch functions are directly called from react-components
  * 
- * 
  * - 
  * 
  * $ SUMMARY:
  * - we divided store into multiple "slices"
  * - a "SLICE" contains "INITIAL-STATE", "REDUCER", "ACTION-CREATORS"
  * - we use "REDUX" inside "store.js"
- *      - we export this "store".. so that we can inject that "store" into react-components and react-app
+ *      - we export this "store".. so that we can inject that "store" into react-components and react-application
  * 
  * 
  * 
@@ -801,7 +804,7 @@ export { createCustomer, updateCustomer };
  * ---
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { Provider } from "react-redux";     //- Package: imported here
+import { Provider } from "react-redux";     //- Package: import
 
 import App from "./App";
 import store from "./store";        //- store: import
@@ -811,7 +814,7 @@ import "./index.css";
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
-    <Provider store={store}>        //>>> resembles <Context.Provider value={{}}> with "value" prop
+    <Provider store={store}>        //>>> resembles like context-provider.. <Context.Provider value={{}}> with "value" prop
       <App />
     </Provider>
   </React.StrictMode>
@@ -833,7 +836,7 @@ root.render(
  * code shown below.. 
  * ex:
  * ---
-// => react-component
+// >>> Customer: a react-component
 import { useSelector } from "react-redux";
 
 function Customer() {
@@ -842,10 +845,10 @@ function Customer() {
 }
 export default Customer;
  * 
- * - the "store.customer" has to be exactly equal to the "name" we provided inside "store"
+ * - the "store.customer" has to be exactly equal to the "name" we provided inside "redux-store"
  * ex:
  * ---
-// => redux-store
+// >>> store.js: a redux-store
 import { combineReducers, createStore } from "redux";
 
 import accountReducer from "./features/accounts/accountSlice";
@@ -853,10 +856,10 @@ import customerReducer from "./features/customers/customerSlice";
 
 const rootReducer = combineReducers({
   account: accountReducer,
-  customer: customerReducer,    // >>> same name
+  customer: customerReducer,    // - same KEY_NAME
 });
 
-const store = createStore(rootReducer);    // >>> create a store using method: "createStore" from "redux"
+const store = createStore(rootReducer);    
 
 export default store;
  * 
@@ -877,6 +880,317 @@ export default Customer;
  * 
  * 
  * 
+ * ! 9. Dispatching Actions from Our React App
+ * -------------------------------------------
+ * (learn: how to dispatch actions to "redux-store" from react-components)
+ * - we have to dispatch an action which will create a new-customer
+ * 
+ * - till now we used "dispatch" to dispatch-an-action
+ *      - so that we called "dispatch" method on "redux-store"
+ * 
+ * - but that is not the way we do "dispatch" inside react
+ * 
+ * >>> instead we have to "useDispatch" custom-hook from "react-redux"
+ * - which returns a "dispatch" function on calling "useDispatch()"
+ * 
+ * ex:
+ * ---
+// >>> CreateCustomer.js --- (Component)
+import { useState } from "react";
+import { createCustomer } from "./customerSlice";
+
+import { useDispatch } from "react-redux";
+
+function Customer() {
+  const [fullName, setFullName] = useState("");
+  const [nationalId, setNationalId] = useState("");
+
+  const dispatch = useDispatch(); // - hook from "react-redux" which provides "dispatch" fn
+
+  function handleClick() {
+    if (!fullName || !nationalId) return;
+    dispatch(createCustomer(fullName, nationalId));   // - action-creator: "createCustomer" 
+  }
+  return (
+    <div>  <h2>Create new customer</h2>
+      <div className="inputs">
+        <div>
+          <label>Customer full name</label>
+          <input
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+          />
+        </div>
+        <div>
+          <label>National ID</label>
+          <input
+            value={nationalId}
+            onChange={(e) => setNationalId(e.target.value)}
+          />
+        </div>
+        <button onClick={handleClick}>Create new customer</button>
+      </div>
+    </div>
+  );
+}
+export default Customer;
+ * -----------------------------------------------------------------------------------
+// >>> Customer.js
+import { useSelector } from "react-redux";
+function Customer() {
+  const customer = useSelector((store) => store.customer.fullName); // - reading redux-store-data
+  return <h2>👋 Welcome, {customer}</h2>;
+}
+export default Customer;
+ * 
+ * 
+ * 
+ * ! 10. The Legacy Way of Connecting Components to Redux
+ * ------------------------------------------------------
+ * (in this lecture.. we will learn how to connect redux-store + react.. when there were no react-hooks existed)
+ * - as useDispatch() and useSelector() hooks are the modern way of using REDUX in react-components
+ * 
+ * - in old_code_bases.. before hooks existed, we had Connect-API
+ * ex:
+ * ---
+import { connect } from "react-redux";
+
+function formatCurrency(value) {
+  return new Intl.NumberFormat("en", {
+    style: "currency",
+    currency: "USD",
+  }).format(value);
+}
+function BalanceDisplay({ balance }) {
+  return <div className="balance">{formatCurrency(balance)}</div>;
+}
+function mapStateToProps(state) {
+  return {
+    balance: state.account.balance,
+  };
+}
+export default connect(mapStateToProps)(BalanceDisplay);
+ * 
+ * - connect() function that is from react-redux is that connext-api 
+ * - this is what old_code_bases had to connect redux and react-component
+ * 
+ * >>> modern_way 
+ * - we have useSelector() hook which we have to read data from a redux-store
+ * simply, we have this hook.. 
+ * ex:
+ * ---
+import { useSelector } from "react-redux";    //- useSelector() hook
+
+function formatCurrency(value) {
+  return new Intl.NumberFormat("en", {
+    style: "currency",
+    currency: "USD",
+  }).format(value);
+}
+function BalanceDisplay() {
+  const balance = useSelector((state) => state.account.balance);
+  return <div className="balance">{formatCurrency(balance)}</div>;
+}
+export default BalanceDisplay;
+ * 
+ * 
+ * 
+ * ! 11. Redux Middleware and Thunks
+ * ---------------------------------
+ * 
+ * ? where do we have to make asynchronous operations inside "REDUX"? 
+ * (async calls to an API)
+ * ---
+ * - as reducers must be "pure-functions" and as we cannot insert asynchronous calls in redux-reducers
+ *    - as making asynchronous calls is a "side-effect"
+ * (reducers must be pure-fns without side-effects)
+ * 
+ * - as redux-store does not know >>> how to perform asynchronous logic
+ *    - this only knows >>> how to synchronously dispatch actions and update the state
+ * 
+ * ? so, where do we have to perform asynchronous operations, then?
+ * #1 
+ * - we can make asynchronous calls inside a component and we can dispatch an action to the store with that received data
+ * (as we want all components clean from fetching logic, this solution isn't ideal)
+ * 
+ * - so now we shall not perform asynchronous calls inside redux-store and react-components
+ * >>> so we have to use "MIDDLEWARES"
+ * 
+ * * MIDDLEWARE 
+ * ---
+ * - middleware a function
+ * - which lies between "dispatching an action" and "redux-store"
+ *    - that is it runs code AFTER "action-dispatch"...but...BEFORE reaching "reducer" in the store
+ * (code executes: after dispatching an action but before action reaches to the reducer in the store)
+ * 
+ * #2: sol-2
+ * - so middleware is the best place for "asynchronous-code", "API-calls", "Timers", "Logging" etc.,
+ *    - a place which is best suitable for "side-effects"
+ * (asynchronous API calls, setting timers, logging to the console, pausing and cancelling actions)
+ * 
+ * ? How do we write middlewares in react ?
+ * - we can use 3rd party packages (OR) we can write those functions by ourselves
+ * 
+ * >>> for asynchronous operations
+ * - we use most popular middleware in redux called //=> Redux-Thunk
+ * 
+ * * Thunks
+ * ? what is the process with Thunks ?
+ * 
+ *                                                        takes time to fetch-data 
+ *      ACTION:          --->---         ACTION:                    /
+ *      type="deposit", payload=50     type="deposit", payload={data}
+ *                    \                           /
+ * COMPONENT --->--- dispatch --->--- Thunk-Middleware --->--- redux-store
+ *                                                                  \
+ *                                                              ACTION:
+ *                                                            type="deposit", payload={data}
+ * - action will not dispatched immediately
+ * #1
+ *    - reaches into middleware >>> into the "Thunk"
+ * #2
+ *    - start fetching (OR) some other asynchronous operations >>> inside thunk  
+ * #3
+ *    - after we receive data.. we place that fetched-data into "payload" of action
+ * #4
+ *    - after that it will reach to the "redux-store"
+ * 
+ * - then the state will immediately gets updated.. so THUNK allows redux to wait before dispatching fetch-data into the store
+ * 
+ * 
+ * 
+ * ! 12. Making an API Call With Redux Thunks
+ * ------------------------------------------
+ * (learn: how to use THUNK)
+ * - use THUNK to implement a feature where user can deposit money into account in a foreign currency
+ *    -  which will be converted by calling an "External-API"
+ * 
+ * - as this "banking-application" takes only "dollars" as amount to be deposited.. 
+ *    - we have to convert other currency-type into only "dollars" (if user has selected other currency-types)
+ * (LOGIC: if currency-type is "USD", then no need of conversion using "external-API" but if other currency-types: {euro, pounds} were used we have to convert using "external-API")
+ * 
+ * >>> to use middlewares.. we follow three-steps
+ * ---
+ * #1 install middleware package
+ *    => npm i redux-thunk
+ * 
+ * #2 we apply middleware to the redux-store
+ *    >>> [import thunk from "redux-thunk"]
+ * 
+ * #3 we use that middleware in action-creator fns
+ *    - inside create-store function, we pass another argument: "applyMiddleware(thunk)"
+ * (the imported "thunk" will be used inside "applyMiddleware" function)
+ * 
+ * >>> Process:
+ * ex:
+ * ---
+import { applyMiddleware, combineReducers, createStore } from "redux";
+
+// -2) import thunk (named-import) for middleware and asynchronous operations 
+import { thunk } from "redux-thunk"
+import accountReducer from "./features/accounts/accountSlice";
+import customerReducer from "./features/customers/customerSlice";
+
+const rootReducer = combineReducers({
+  account: accountReducer,
+  customer: customerReducer,
+});
+// -3) createStore() takes in "reducer" and "applyMiddleware()" function
+const store = createStore(rootReducer, applyMiddleware(thunk));
+
+export default store;
+ * 
+ * - now we informed "REDUX" that we want to use "THUNK" in our react-application
+ * 
+ * >>> now we use action-creator file: (accountSlice.js)
+ *    - as it is responsible for depositing-money into our bank-account
+ * 
+ * >>> as every API call needs "THUNK" and it should only be called inside "action-creator" func
+ * 
+ * - previously, we immediately returned an "action" with an action-object
+ * ex:
+ * ---
+function deposit(amount, currencyType) {
+  return {
+    type: "account/deposit",
+    payload: amount,
+  };
+}
+ * 
+ * - but we will not return "action" immediately instead we return a "function"..
+ * ex:
+ * ---
+function deposit(amount, currencyType) {
+  if (currencyType === "USD") {
+    return {
+      type: "account/deposit",
+      payload: amount,
+    };
+  }
+
+  // - middleware
+  return async function (dispatch, getState) {
+    const res = await fetch(
+      `https://api.frankfurter.app/latest?amount=${amount}&from=${currencyType}&to=USD`
+    );
+    const data = await res.json();
+    const converted = data.rates.USD;
+
+    // - dispatch an action
+    dispatch({ type: "account/deposit", payload: converted });
+  };
+}
+ * 
+ * - at dispatch call we will dispatch a function instead of an action-object
+ * ex:
+ * ---
+function handleDeposit() {
+  if (!depositAmount) return;
+
+  dispatch(deposit(depositAmount, currency));
+  setDepositAmount("");
+}
+ * 
+ * - whenever redux observes a function returning from a dispatch fn.. it knows that this behavior is cause of "THUNK"
+ *    - then it will execute that function and not immediately dispatch action to store
+ * 
+ * - in order to execute later, middleware fn gets access to dispatch-fn and current-state  
+ *    - after asynchronous call (OR) after fetch call has been completed.. same async function will dispatch an action later in time
+ * 
+ * >>> execution-flow:
+ * - whenever currency-type is different from "USD".. "dispatch" func inside AccountOperations.js file... 
+ * that is:
+ * ---
+  function handleDeposit() {
+    if (!depositAmount) return;
+
+    dispatch(deposit(depositAmount, currency));
+    setDepositAmount("");
+  }
+ * 
+ * - ... will call deposit() which has async fn in it as shown below >>> (cause other currency-type)
+ * that is:
+ * ---
+function deposit(amount, currencyType) {
+  if (currencyType === "USD") {
+    return {
+      type: "account/deposit",      //- this is not called cause of different currency
+      payload: amount,
+    };
+  }
+
+  // middleware 
+  return async function (dispatch, getState) {          //- this async fn will be called 
+    const res = await fetch(
+      `https://api.frankfurter.app/latest?amount=${amount}&from=${currencyType}&to=USD`
+    );
+    const data = await res.json();
+    const converted = data.rates.USD;       //- this fetch fn result will take time
+
+    // dispatch an action
+    dispatch({ type: "account/deposit", payload: converted });      //- after fetch request has been completed this will be dispatched!
+  };
+}
  * 
  * 
  * 
@@ -884,17 +1198,14 @@ export default Customer;
  * 
  * 
  * 
- * ! 1. section overview
- * ---------------------
  * 
- * ! 1. section overview
- * ---------------------
  * 
- * ! 1. section overview
- * ---------------------
  * 
- * ! 1. section overview
- * ---------------------
+ * 
+ * 
+ * 
+ * 
+ * 
  * 
  * ! 1. section overview
  * ---------------------
