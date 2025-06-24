@@ -880,8 +880,8 @@ export default Customer;
  * 
  * 
  * 
- * ! 9. Dispatching Actions from Our React App
- * -------------------------------------------
+ * ! 9. Dispatching Actions from React Components
+ * ----------------------------------------------
  * (learn: how to dispatch actions to "redux-store" from react-components)
  * - we have to dispatch an action which will create a new-customer
  * 
@@ -999,7 +999,7 @@ export default BalanceDisplay;
  * ---------------------------------
  * 
  * ? where do we have to make asynchronous operations inside "REDUX"? 
- * (async calls to an API)
+ * (async / fetch calls to an API)
  * ---
  * - as reducers must be "pure-functions" and as we cannot insert asynchronous calls in redux-reducers
  *    - as making asynchronous calls is a "side-effect"
@@ -1041,17 +1041,19 @@ export default BalanceDisplay;
  *      ACTION:          --->---         ACTION:                    /
  *      type="deposit", payload=50     type="deposit", payload={data}
  *                    \                           /
- * COMPONENT --->--- dispatch --->--- Thunk-Middleware --->--- redux-store
- *                                                                  \
- *                                                              ACTION:
+ * COMPONENT --->--- dispatch --->--- Thunk-Middleware --->--- redux-store --->---+
+ *                                                                 \               |
+ *                                                                  \         STATE-UPDATE --->--- re-render
+ *                                                              ACTION:     /
  *                                                            type="deposit", payload={data}
- * - action will not dispatched immediately
+ * #0
+ *    - action will not dispatched immediately
  * #1
  *    - reaches into middleware >>> into the "Thunk"
  * #2
  *    - start fetching (OR) some other asynchronous operations >>> inside thunk  
  * #3
- *    - after we receive data.. we place that fetched-data into "payload" of action
+ *    - after it receives data.. it place that fetched-data into "payload" of that action
  * #4
  *    - after that it will reach to the "redux-store"
  * 
@@ -1075,18 +1077,18 @@ export default BalanceDisplay;
  *    => npm i redux-thunk
  * 
  * #2 we apply middleware to the redux-store
- *    >>> [import thunk from "redux-thunk"]
+ *    >>> [import { thunk } from "redux-thunk"]
  * 
  * #3 we use that middleware in action-creator fns
  *    - inside create-store function, we pass another argument: "applyMiddleware(thunk)"
- * (the imported "thunk" will be used inside "applyMiddleware" function)
+ * (the named-import "thunk" will be used inside "applyMiddleware" function)
  * 
  * >>> Process:
  * ex:
  * ---
 import { applyMiddleware, combineReducers, createStore } from "redux";
 
-// -2) import thunk (named-import) for middleware and asynchronous operations 
+// -2) import thunk (a named-import) for middleware and asynchronous operations 
 import { thunk } from "redux-thunk"
 import accountReducer from "./features/accounts/accountSlice";
 import customerReducer from "./features/customers/customerSlice";
@@ -1095,7 +1097,7 @@ const rootReducer = combineReducers({
   account: accountReducer,
   customer: customerReducer,
 });
-// -3) createStore() takes in "reducer" and "applyMiddleware()" function
+// -3) createStore() takes in "combined-reducer" and "applyMiddleware()" function >>> [in-built]
 const store = createStore(rootReducer, applyMiddleware(thunk));
 
 export default store;
@@ -1128,7 +1130,7 @@ function deposit(amount, currencyType) {
     };
   }
 
-  // - middleware
+  // >>> middleware
   return async function (dispatch, getState) {
     const res = await fetch(
       `https://api.frankfurter.app/latest?amount=${amount}&from=${currencyType}&to=USD`
@@ -1136,7 +1138,7 @@ function deposit(amount, currencyType) {
     const data = await res.json();
     const converted = data.rates.USD;
 
-    // - dispatch an action
+    // >>> dispatch an action
     dispatch({ type: "account/deposit", payload: converted });
   };
 }
@@ -1149,6 +1151,7 @@ function handleDeposit() {
 
   dispatch(deposit(depositAmount, currency));
   setDepositAmount("");
+  setCurrency("USD")
 }
  * 
  * - whenever redux observes a function returning from a dispatch fn.. it knows that this behavior is cause of "THUNK"
@@ -1166,6 +1169,7 @@ function handleDeposit() {
 
     dispatch(deposit(depositAmount, currency));
     setDepositAmount("");
+    setCurrency("USD")
   }
  * 
  * - ... will call deposit() which has async fn in it as shown below >>> (cause other currency-type)
@@ -1192,160 +1196,468 @@ function deposit(amount, currencyType) {
   };
 }
  * 
+ * $ NOTE:
+ * - API calls that we made are encapsulated inside "accountSlice.js" file where all "reducer fns" and "action-creator fns" lies 
+ *    - so AccountOperation.js file does not know about these asynchronous functionality that is going on (behind the scenes)
  * 
+ * $ SUMMARY:
+ * - when we are using "THUNKS" instead of returning an action object, we return a new function
+ * 
+ * 
+ * 
+ * ! 13. The Redux DevTools
+ * -----------------------
+ * (installation of redux development tools)
+ * - it is a 3 step process
+ * 
+ * #1 install google chrome extension: "redux dev tools"
  * 
+ * #2 install NPM package in VSCode Terminal
+ *    => npm i redux-devtools-extension
+ * 
  * 
+ * #3 import "composeWithDevTools" inside "store.js"
+ * - and wrap "applyMiddleware(thunk)" into "composeWithDevTools()"
+ *  
+ * !--------------SKIPPED--------------!
+ * - I can not able to install NPM package for "redux-devtools"
+ * 
+ * 
+ * ! 14. What is Redux Toolkit (RTK)?
+ * ----------------------------------
+ * (till now: we learnt, fundamentals of REDUX and CLASSIC-REDUX)
+ * - in this lecture we learn modern way of writing "REDUX"!
+ * => REDUX TOOLKIT
  * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * ! 1. section overview
- * ---------------------
- * 
- * ! 1. section overview
- * ---------------------
- * 
- * ! 1. section overview
- * ---------------------
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
+ * ? what is Redux Tool Kit ?
+ * ---
+ * - this is the preferred way to write redux instead of "Classic-Redux"! (recommended by devs)
+ * - with this we can use Redux's Best Practices!
+ * 
+ * * without fundamentals of CLASSIC REDUX >>> learning "Redux Tool Kit" is hard
+ * 
+ * ? what are the advantages of Redux Tool Kit ?
+ * ---
+ * - this allows us to write less code (to achieve same results as "Classic-Redux")
+ * 
+ * - which also provides 3 important things of all, they are... 
+ *    (even though there are many!)..    
+ * #1 RTK: we can write code that mutates state inside reducers
+ * (BTS: a library called "IMMER" will convert our code to non-mutating)
+ * (but the new code we write looks like that, as if we are mutating the "state" directly)
+ *    
+ * #2 RTK: automatically creates action-creators (from our reducers)
+ * (this may create additional work but this helps us greatly)
+ * 
+ * #3 RTK: we can automatically set-up "THUNK" middleware and Dev-Tools 
+ * 
+ * 
+ * 
+ * ! 15. Creating the Store With RTK
+ * ---------------------------------
+ * (use RTK: to convert previous classic-store into a modern-store)
+ * 
+ * #1 installation of "redux-tool-kit"
+ *    => npm i @reduxjs/toolkit
+ * 
+ * #2 import "configureStore"
+ * >>> [ import { configureStore } from "@reduxjs/toolkit" ]
+ * 
+ * ? "store" before using RTK
+ * ---
+import { applyMiddleware, combineReducers, createStore } from "redux";
+import { thunk } from "redux-thunk";
+
+import accountReducer from "./features/accounts/accountSlice";
+import customerReducer from "./features/customers/customerSlice";
+
+const rootReducer = combineReducers({
+  account: accountReducer,
+  customer: customerReducer,
+});
+
+const store = createStore(rootReducer, applyMiddleware(thunk));
+export default store;
+ * 
+ * - while learning classic-redux, we discussed that by using classic-redux we get access to "createStore" 
+ * - this "createStore()" is deprecated cause of old-way of writing redux-code
+ * 
+ * - but in modern redux, in RTK we gets access to "configureStore" fn from "@reduxjs/toolkit"
+ *    - this is similar to "createStore" fn but adds few more functionalities 
+ * 
+ * >>> Functionalities:
+ * - automatically combines two or more reducers
+ * - automatically adds a "Thunk"- Middleware
+ * - automatically sets up dev-tools
+ * 
+ * $ NOTE:
+ * - previous store is preserved and we implement new things inside duplicated store 
+ * 
+ * ? new store after using RTK 
+ * ---
+import { configureStore } from "@reduxjs/toolkit";      // >>> does everything.. no need of {root-reducer, applyMiddleware} fns & no need of "THUNK"
+
+import accountReducer from "./features/accounts/accountSlice";
+import customerReducer from "./features/customers/customerSlice";
+
+const store = configureStore({
+  reducer: {
+    account: accountReducer,      // >>> root reducer
+    customer: customerReducer,
+  },
+});
+export default store;
+ * 
+ * 
+ * 
+ * ! 16. Creating the Account Slice
+ * --------------------------------
+ * (converting "accountSlice" using RTK)
+ * - preserved previous-reducer fn file and "accountSlice"-file
+ * 
+ * #1 import "createSlice"
+ * >>> [ import {createSlice} from "@reduxjs/toolkit" ]
+ * 
+ * * createSlice
+ * ---
+ * - three big benefits... 
+ * #1 automatically creates action-creator functions
+ *    - automatically created from modern-reducers
+ * 
+ * #2 make writing reducers easily
+ *    - no longer needed "switch-statement" and default statement is automatically handled 
+ * 
+ * #3 state can be mutated
+ *    - but BTS, a lib called "immer" which will convert logic back to immutable logic 
+ *    (even we wrote code as if the logic looks mutating-logic)
+ * 
+ * ? previous account-slice (preserved)
+ * ---
+const initialStateAccount = {
+  balance: 0,
+  loan: 0,
+  loanPurpose: "",
+  isLoading: false,
+};
+// - reducers
+export default function accountReducer(state = initialStateAccount, action) {
+  switch (action.type) {
+    case "account/deposit":
+      return {
+        ...state,                                   |
+        balance: state.balance + action.payload,    | //>>> here we're creating new state 
+        isLoading: false                            |
+      };
+    case "account/withdraw": return { ...}
+    case "account/requestLoan": return{ ... }
+    case "account/payLoan": return{ ... }
+    case "account/convertingCurrency": return{ ... }
+    default:
+      return state;
+  }
+}
+//- action-creator functions
+function deposit(amount, currencyType) {
+  if (currencyType === "USD") {
+    return {
+      type: "account/deposit",
+      payload: amount,
+    };
+  }
+  else{
+    ... THUNK-MIDDLEWARE ..
+  }
+}
+function withdraw(amount) { ... }
+function withdraw(amount) { ... }
+function requestLoan(amount, purpose) { ... }
+function payLoan() { ... }
+
+export { deposit, withdraw, requestLoan, payLoan };
+//$ NOTE: dispatch functions are directly called from react-components
+ * 
+ * ? "accountSlice" after RTK
+ * ---
+import { createSlice } from "@reduxjs/toolkit";
+
+const initialState = {
+  balance: 0,
+  loan: 0,
+  loanPurpose: "",
+  isLoading: false,
+};
+
+const accountSlice = createSlice({
+  name: "account",
+  initialState: initialState,
+  reducers: {
+    deposit(state, action) {
+      state.balance = state.balance + action.payload; //>>> this is mutating logic.. no need of creating new state obj by spreading "...state"
+    },
+    withdraw(state, action) {
+      state.balance = state.balance - action.payload;
+    },
+    requestLoan(state, action) {
+      if (state.loan > 0) return; // >>> returning out from function.. instead of returning "state"
+      state.balance = state.balance + action.payload.amount; //>>> we don't return state.. but we have "mutate"
+      state.loan = action.payload.amount;
+      state.loanPurpose = action.payload.purpose;
+    },
+    payLoan(state, action) {
+      state.balance = state.balance - state.loan;
+      state.loan = 0;
+      state.loanPurpose = "";
+    },
+  },
+});
+
+export const { deposit, withdraw, requestLoan, payLoan } = accountSlice.actions;    //>>> action-creator here is automatically made out of "createSlice" fn
+
+export default accountSlice.reducer;
+ * 
+ * <AccountOperations.js>
+ * >>> no changes inside "AccountOperations.js" file... everything same as before
+ * 
+ * $ NOTE:
+ * - inside above code.. name/reducerName resembles.. (account/deposit)
+ * 
+ * 
+ * ? Problem:
+ * ? while "requesting-loan" >>> requestLoan(state, action) {..} reducer-fun >>> needs two arguments but... 
+ * - as action-creator fns are automatically created they by-default takes only one argument 
+ * - as they are automatically created (their creation is not in our hands (OR) in our code) >>> so we can only have to "prepare" >>> them to accept two arguments
+ * 
+ * >>> solution:
+ * >>> PREPARING - data that before reaches "REDUCER" 
+ * - follow the code when "REDUCER" fun needs two parameters 
+ * ---
+requestLoan: {
+  prepare(amount, purpose) {      //>>> we need to prepare data with "prepare" method
+    return {
+      payload: { amount, purpose },     //>>> this returns a new object: which will be a "payload" for below "reducer" fn  
+    };                                      
+  },                                   
+  reducer(state, action) {
+    if (state.loan > 0) return;                                       // >>> not returning state.. instead returning from function
+    state.balance = state.balance + action.payload.amount;            // >>> we don't return state.. but we have to modify
+    state.loan = action.payload.amount;
+    state.loanPurpose = action.payload.purpose;
+  },
+},
+ * 
+ * - follow this above code.. only when reducer-fn needs two or more arguments
+ * 
+ * ? Problem:
+ * ? while using RTK, we may fall into small pitfalls like these
+ * ? Problem- with "payLoan" fn.. as we are mutating state.. we have to follow synchronous-way of mutation
+ * ---
+payLoan(state, action) {
+  state.loan = 0;
+  state.loanPurpose = "";
+  state.balance = state.balance - state.loan;
+},
+ * 
+ * - here in above code... we are setting "loan" to 0 and then we are subtracting "loan" from "balance"
+ * - we have to 1st: subtract "loan" from "balance"
+ *    - 2nd: and then only set "loan" to 0   
+ * 
+ * follow the code below.. 
+ * ---
+payLoan(state, action) {
+  state.balance = state.balance - state.loan;
+  state.loan = 0;
+  state.loanPurpose = "";
+},
+ * 
+ * $ SUMMARY:
+ * - the new set-up we followed for "store" is the easiest-way
+ * - but "accountSlice" must be made with "classic-redux" 
+ * 
+ * 
+ * 
+ * ! 17. Back to Thunks (THUNKS in new RTK)
+ * ----------------------------------------
+ * (THUNKS in new RTK)
+ * - asynchronous operations to convert currencies
+ * 
+ * >>> in order to create THUNKS with RTK, we use "createAsyncThunk" fn
+ * - but using this requires a lot of code and work
+ * 
+ * $ NOTE:
+ * - we will use it in future projects (if interested to use "createAsyncThunk")
+ * 
+ * (using "createAsyncThunk" fn requires extra code)
+ * - so we will use classic-way of inserting asynchronous operations into slice-file
+ * - that could be done this way.. 
+ * ---
+import { createSlice } from "@reduxjs/toolkit";
+const initialState = { ... };
+const accountSlice = createSlice({
+  name: "account",
+  initialState: initialState,
+  reducers: {
+    //
+    deposit(state, action) {      //>>> #0
+      state.balance = state.balance + action.payload; 
+      state.isLoading = false;
+    },
+    requestLoan: {
+      prepare(amount, purpose) {
+        return {
+          payload: { amount, purpose },
+        };
+      },
+      reducer(state, action) {
+        if (state.loan > 0) return; 
+        state.balance = state.balance + action.payload.amount;
+        state.loan = action.payload.amount;
+        state.loanPurpose = action.payload.purpose;
+      },
+    },
+    withdraw(state, action) { ... },
+    payLoan(state) { ... },
+    //
+    convertingCurrency(state) {     // >>> #3
+      state.isLoading = true; 
+    },
+  },
+});
+export const { withdraw, requestLoan, payLoan } = accountSlice.actions; // >>> #1
+//
+export function deposit(amount, currencyType) {     //>>> #2
+  if (currencyType === "USD") {
+    return { type: "account/deposit", payload: amount };
+  }
+
+  return async function (dispatch, getState) {
+    dispatch({ type: "action/convertingCurrency" });
+
+    const res = await fetch(
+      `https://api.frankfurter.app/latest?amount=${amount}&from=${currencyType}&to=USD`
+    );
+    const data = await res.json();
+    const converted = data.rates.USD;
+
+    dispatch({ type: "account/deposit", payload: converted });
+  };
+}
+export default accountSlice.reducer;
+ * 
+ * #0 we did not remove the deposit-reducer 
+ *    - for state updates
+ * 
+ * #1 removed "deposit" action-dispatcher from accountSlice.actions
+ *    - so that we could write a new named export in #2
+ * 
+ * #2 here we inserted classic-asynchronous-way of handling fetch-requests
+ *    - we did not follow RTK-way of handling asynchronous requests
+ * 
+ * #3 we added another reducer "action/convertingCurrency"..
+ *    - we need to show "isLoading" state while converting-currency 
+ * 
+ * 
+ * 
+ * ! 18. Creating the Customer Slice
+ * ---------------------------------
+ * (following same instructions that are followed while creating- accountSlice with new RTK)
+ * - follow the code below:
+ * ---
+import { createSlice } from "@reduxjs/toolkit";
+
+const initialState = {
+  fullName: "",
+  nationalId: "",
+  createdAt: "",
+};
+const customerSlice = createSlice({
+  name: "customer",
+  initialState: initialState,
+  reducers: {
+    createCustomer: {
+      //
+      prepare(fullName, nationalId, createdAt) {
+        return {
+          payload: {
+            fullName,
+            nationalId,
+            createdAt: new Date().toISOString(), // >>> cannot be done inside reducer
+          },
+        };
+      },
+      reducer(state, action) {
+        state.fullName = action.payload.fullName;
+        state.nationalId = action.payload.nationalId;
+        state.createdAt = action.payload.createdAt;
+      },
+    },
+    updateCustomer(state, action) {
+      state.fullName = action.payload;
+    },
+  },
+});
+export const { createCustomer, updateCustomer } = customerSlice.actions;
+export default customerSlice.reducer;
+ * 
+ * - property inside state "createdAt".. it's value is a side-effect
+ * 
+ * - it has to be assigned to a value: [ new Date().toISOString() ] inside "prepare"
+ *    - but not inside "reducer"
+ *  
+ * $ REMEMBER:
+ * - reducer must be a pure-fn so we cannot allow a side-effect into it  
+ * 
+ * 
+ * 
+ * ! 19. Redux vs. Context API
+ * ---------------------------
+ * (we will compare: Context API + useReducer vs. Redux) 
+ * (get to know: when to use both)
+ * - devs think that context-api + useReducer wil be a complete replacement for "redux" 
+ *    - it is but only in certain situations!
+ * 
+ * ? Context-API + useReducer
+ * ADV
+ *    - built into "react"
+ *    - easy to set-up a "single context"
+ * DIS
+ *    - additional state-"slice" requires new context "set-up from scratch" (provider-hell in App.js)
+ *        - may end-up with many context providers in main app
+ *    - no mechanisms for async-operations
+ *    - performance optimization requires more work 
+ *    - only has react-dev-tools
+ *        - it is hard when applications are "large" and "complex"
+ * 
+ * >>> when to use "Context-API + useReducer"?
+ * #1 use "Context-API + useReducer" for "global-state" management in "small"-applications
+ * #2 when we need to share a value that "does not change often" (rarely change) >>> [preferred-language, color-themes, authenticated-user..]
+ * #3 when we need to solve simple "prop-drilling" problem
+ * #4 when we need to manage state in "local-sub-tree" of an application
+ * ex: advanced compound component pattern {we study later!} 
+ * 
+ * 
+ * ? Redux
+ * DIS
+ *    - requires additional packages (optimization-problem: may increase bundle size)
+ *    - more work to set-up "initially"
+ *        - ADV: once set-up is done.. it is easily to create "additional state-slices"
+ * ADV
+ *    - supports a separate "mechanism" for async-operations (while it is not easy to use)
+ *        - it gives us a way to handle asynchronous tasks inside "state-management" tool
+ *    - performance optimization is "out-of-box"
+ *    - excellent redux-dev-tools
+ *   
+ * >>>> when to use "redux"?
+ * #1 use "Redux" for "global-state" management in "large"-applications
+ * #2 when we have lots of global-UI-state that needs to be "updated-frequently" (redux does not need optimization) >>> [shopping-cart, complex-filters or search..]
+ * #3 when we have "complex-state" with nested objects and arrays (cause we can mutate-state with RTK)
+ * 
+ * 
+ * 
+ * $ NOTE:
+ * - we should not use any of these tools for "remote-state" 
+ *    - but sometimes it helps to fetch data from an API
+ * when to use?
+ * - there is no correct-answer, it all depends upon project needs!
  * 
  * 
  * 

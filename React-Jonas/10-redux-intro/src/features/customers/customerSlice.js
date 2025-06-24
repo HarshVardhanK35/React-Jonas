@@ -1,50 +1,37 @@
-const initialStateCustomer = {
+import { createSlice } from "@reduxjs/toolkit";
+
+const initialState = {
   fullName: "",
   nationalId: "",
   createdAt: "",
 };
 
-export default function customerReducer(state = initialStateCustomer, action) {
-  //
-  switch (action.type) {
-    case "customer/createCustomer":
-      return {
-        ...state,
-        fullName: action.payload.fullName,
-        nationalId: action.payload.nationalId,
-        createdAt: action.payload.createdAt,
-      };
-
-    case "customer/updateCustomer":
-      return {
-        ...state,
-        fullName: action.payload,
-      };
-
-    default:
-      return state;
-  }
-}
-
-// action-creator functions
-function createCustomer(fullName, nationalId) {
-  return {
-    type: "customer/createCustomer",
-    payload: {
-      fullName: fullName,
-      nationalId: nationalId,
-      createdAt: new Date().toISOString(),
+const customerSlice = createSlice({
+  name: "customer",
+  initialState: initialState,
+  reducers: {
+    createCustomer: {
+      //
+      prepare(fullName, nationalId, createdAt) {
+        return {
+          payload: {
+            fullName,
+            nationalId,
+            createdAt: new Date().toISOString(), // cannot be done inside reducer
+          },
+        };
+      },
+      reducer(state, action) {
+        state.fullName = action.payload.fullName;
+        state.nationalId = action.payload.nationalId;
+        state.createdAt = action.payload.createdAt;
+      },
     },
-  };
-}
+    updateCustomer(state, action) {
+      state.fullName = action.payload;
+    },
+  },
+});
 
-function updateCustomer(fullName) {
-  return {
-    type: "customer/updateCustomer",
-    payload: fullName,
-  };
-}
-
-export { createCustomer, updateCustomer };
-
-// dispatch functions are directly called from react-components
+export const { createCustomer, updateCustomer } = customerSlice.actions;
+export default customerSlice.reducer;
