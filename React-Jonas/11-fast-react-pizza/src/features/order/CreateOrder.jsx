@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Form, redirect, useActionData, useNavigation } from "react-router-dom";
+import { createOrder } from "../../services/apiRestaurant";
 
 // https://uibakery.io/regex-library/phone-number
 const isValidPhone = (str) =>
@@ -31,6 +33,12 @@ const fakeCart = [
 ];
 
 function CreateOrder() {
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === "submitting";
+
+  const formErrors = useActionData();
+  console.log(formErrors);
+
   // const [withPriority, setWithPriority] = useState(false);
   const cart = fakeCart;
 
@@ -38,7 +46,8 @@ function CreateOrder() {
     <div>
       <h2>Ready to order? Let's go!</h2>
 
-      <form>
+      {/* <Form method="POST" action="/order/new"> */}
+      <Form method="POST">
         <div>
           <label>First Name</label>
           <input type="text" name="customer" required />
@@ -49,6 +58,7 @@ function CreateOrder() {
           <div>
             <input type="tel" name="phone" required />
           </div>
+          {formErrors?.phone ? <p>{formErrors.phone}</p> : ""}
         </div>
 
         <div>
@@ -70,11 +80,44 @@ function CreateOrder() {
         </div>
 
         <div>
-          <button>Order now</button>
+          {/* specify "hidden-input" to get data into "action-fn" without being Form-Field */}
+          <input type="hidden" name="cart" value={JSON.stringify(cart)} />
+          <button
+            disabled={isSubmitting}
+            className="inline-block rounded-full bg-yellow-400 px-4 py-3 uppercase font-semibold tracking-wide text-stone-800 hover:bg-yellow-300 transition-colors duration-300 focus:bg-yellow-300 focus:outline-none focus: ring focus:ring-yellow-300 focus:ring-offset-2 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? "Placing order..." : "Order now"}
+          </button>
         </div>
-      </form>
+      </Form>
     </div>
   );
+}
+
+// catching the request
+export async function action({ request }) {
+  // get the data from the Form
+  const formData = await request.formData();
+  const data = Object.fromEntries(formData);
+
+  // clean-up data
+  const order = {
+    ...data,
+    cart: JSON.parse(data.cart),
+    priority: data.priority === "on",
+  };
+
+  // if errors?
+  const errors = {};
+  if (!isValidPhone(order.phone)) {
+    errors.phone = "Please provide us your valid phone number!";
+  }
+  if (Object.keys(errors).length > 0) return errors;
+
+  // if (!errors) ? `creating "POST" req to "createOrder" on API` : "return from function"
+  const newOrder = await createOrder(order);
+  // after receiving newOrder we have to navigate (but we can't use "useNavigate" inside reg-fun)
+  return redirect(`/order/${newOrder.id}`);
 }
 
 export default CreateOrder;

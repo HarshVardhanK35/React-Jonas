@@ -354,8 +354,16 @@ function AppLayout() {
     </div>
   );
 }
+
+when navigation.state is "loading" the below code will be rendered..
+---
+function Loader() {
+  return <div className="loader"></div>;
+}
+export default Loader;
  * 
- * - when we visit "Menu" page.. while fetching data.. it will show "loading" after it shows "idle"
+ * - when we visit "Menu" page.. that is navigation state will be set to "loading"
+ *    - when there is no "navigation".. navigation state will be set to "idle"
  * (to know more >>> console log.. "navigation")
  * 
  * 
@@ -371,9 +379,10 @@ function AppLayout() {
  * - we can handle error using "useRouteError" hook inside error-element
 Error.jsx
 ---
+import { useNavigate, useRouteError } from "react-router-dom";
 function Error() {
   const navigate = useNavigate();
-  const error = useRouteError();
+  const error = useRouteError();    //>>> "useRouteError" to handle errors
 
   return (
     <div>
@@ -384,7 +393,7 @@ function Error() {
   );
 }
 
-AppLayout.jsx
+App.jsx
 ---
 const router = createBrowserRouter([
   {
@@ -419,7 +428,7 @@ const router = createBrowserRouter([
  * - in order to search for order-id, we need a search-component to enter the order-id
  * (search-field in the header)
  * 
-SearchOrder.jsx
+SearchOrder.jsx - component
 ---
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -431,6 +440,7 @@ function SearchOrder() {
   function handleSubmit(e) {
     e.preventDefault();
     if (!query) return;
+
     navigate(`/order/${query}`);
     setQuery("");
   }
@@ -448,6 +458,8 @@ export default SearchOrder;
 
 inside App.jsx
 ---
+import Order, { loader as orderLoader } from "./features/order/Order";
+
 {
   path: "/order/:orderId",
   element: <Order />,
@@ -469,7 +481,8 @@ function Order() {
     orderPrice,
     estimatedDelivery,
     cart,
-  } = orderDetails;
+  } = orderDetails;           extracted from helper-fns-file from utils-fol
+//                              /
   const deliveryIn = calcMinutesLeft(estimatedDelivery);
   return (
     <div>
@@ -488,7 +501,8 @@ function Order() {
         </p>
         <p>(Estimated delivery: {formatDate(estimatedDelivery)})</p>
       </div>
-      <div>
+      <div>                       helper fn
+      //                            /
         <p>Price pizza: {formatCurrency(orderPrice)}</p>
         {priority && <p>Price priority: {formatCurrency(priorityPrice)}</p>}
         <p>To pay on delivery: {formatCurrency(orderPrice + priorityPrice)}</p>
@@ -502,15 +516,15 @@ export async function loader({ params }) {      //>>> using loader inside same c
 }
 export default Order;
  * 
- * - to get search-params from URL we can use "useParams" hook 
- *      - but that works inside components but not in regular-functions
+ * - to get search-params from URL we have to use "useParams" hook 
+ *      - but that works only inside a component but not in regular-functions
  * 
- * - so, react-router passes data into loader-function 
+ * - so, react-router passes data into loader-function (that data also contains "search-params")
  *      - one of that is "params" and we can destructure it!
  * 
  * that is.. 
  * const order = await getOrder(params.orderId);
- *      - "orderId" has to be same to the name of the param given in.. path: "/order/:orderId"
+ *      - "orderId" has to be same to the name of the param given in the path: "/order/:orderId"
  * 
  * 
  * 
@@ -526,91 +540,193 @@ export default Order;
  * 
  * >>> project-requirements:
  * - as per project-requirements, that orders are made by sending a POST-req with order-data to API
- * - so these actions and forms are used to create new orders 
- * - we have create "form" send "actions" inside "CreateOrder"
+ * - so these actions and forms are used to create new-orders 
+ * - we have create "form" and "actions" inside "CreateOrder.jsx"
+ * 
+ * $ BEFORE NOTE:
+ * * Form: react-router-dom's Form element
+ * - react-router-dom provides us with "Form" element on which we have "method" 
+ * >>> method:
+ * - as we are creating a new order, we have to specify POST-request in "method"
+ *    - except "GET" we can use "POST" "PUT" "PATCH" 
+ * >>> action:
+ * - we can write a path that a specific form can be submitted to!
+ *    - but not necessarily.. as it can send automatically to the closest route {"/order/new"}
+ * 
+ * * action-functions
+ * - similar to "loader" fns we have to create "action" fns
+ *    - as soon as we submit "Special-Form" from react-router-dom.. that will then create a request.. then that request will be "INTERCEPTED" by this action-fn (when only we are connected to react-router)
+ * (simply, whenever Form-gets-submitted, BTS react-router will call action-function and it will pass the request that form was submitted)
+ * 
+ * ACTION-FN:
+ * ---
+export async function action({ request }) {
+  const formData = await request.formData()
+}
+ * 
+ * - "await request.formData()" in here.. ".formData" is from a regular web-api (provided by the browser)
+ * 
+ * Total-Code:
+ * ---
+CreateOrder.jsx
+---
+function CreateOrder() {
+  // const [withPriority, setWithPriority] = useState(false);
+  const cart = fakeCart;
+  return (
+    <div>
+      <h2>Ready to order? Let's go!</h2>
+
+      <Form method="POST" action="/order/new">     //>>> no need of this !!!
+      <Form method="POST">                         //>>> simply this can be allowed !!!
+        <div>
+          <label>First Name</label>
+          <input type="text" name="customer" required />
+        </div>
+        <div>
+          <label>Phone number</label>
+          <div>
+            <input type="tel" name="phone" required />
+          </div>
+        </div>
+        <div>
+          <label>Address</label>
+          <div>
+            <input type="text" name="address" required />
+          </div>
+        </div>
+        <div>
+          <input
+            type="checkbox"
+            name="priority"
+            id="priority"
+            // value={withPriority}
+            // onChange={(e) => setWithPriority(e.target.checked)}
+          />
+          <label htmlFor="priority">Want to yo give your order priority?</label>
+        </div>
+        <div>
+          <button>Order now</button>
+        </div>
+      </Form>
+    </div>
+  );
+}
+export async function action({ request }) {
+  const formData = await request.formData();    //>>> concentrate here !!!
+  const data = Object.fromEntries(formData)   //>>> recipe that we have to follow !!!
+  // console.log(data);
+
+  return null;
+}
+export default CreateOrder;
+
+inside App.jsx
+---
+{
+  path: "/order/new",
+  element: <CreateOrder />,
+  action: createOrderAction,    // >>> action specified here !!!
+},
+ * 
+ * - now whenever there will be a new form-submission on route path: "/order/new".. 
+ *    - then the action: createOrderAction will be called
+ * 
+ * - each time whenever we handle formData like below.. we have to use Object.fromEntries().. so it is a common recipe to follow every time
+ * ex: const data = Object.fromEntries(formData) 
+ * 
+ * - to get cart data into action-fn specified in "CreateOrder.js"
+ *    - there is a way of getting some data into an action without being a Form-field
+ *        - that is by specifying a "hidden-input"
+ * 
+ * => everything explained in detail inside files
+ * 
  * 
  * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
+ * ! 11. Error Handling in Form Actions
+ * ------------------------------------
+ * (before handling error! we "disable" submit-btn by listening to useNavigation.state)
+ * - for form we have useNavigation's state changes from "submitting" to "loading"
+ * 
+ * code:
+ * ---
+function CreateOrder() {
+  const navigation = useNavigation();         //>>> useNavigation here!
+  const isSubmitting = navigation.state === "submitting"
+
+  return (
+    <div>
+      <h2>Ready to order? Let's go!</h2>
+      <Form method="POST">
+      ---OTHER-FORM-COMPONENTS ---
+        <div>
+          <input type="hidden" name="cart" value={JSON.stringify(cart)} />
+          //- conditional-rendering
+          <button disabled={isSubmitting}>{isSubmitting ? "Placing order..." : "Order now!"}</button>
+        </div>
+      </Form>
+    </div>
+  );
+}
+ * 
+ * ? Error Handling:
+ * ---
+function CreateOrder() {
+  const formErrors = useActionData();   //>>> useActionData: to read data from "action-function"
+  return (
+    <div>
+      <div>
+        <label>Phone number</label>
+        <div>
+          <input type="tel" name="phone" required />
+        </div>
+        {formErrors?.phone ? <p>{formErrors.phone}</p> : ""}
+      </div>
+      <div>
+        //- specify "hidden-input" to get data into "action-fn" without being Form-Field 
+        <input type="hidden" name="cart" value={JSON.stringify(cart)} />
+        <button disabled={isSubmitting}>
+          {isSubmitting ? "Placing order..." : "Order now!"}
+        </button>
+      </div>
+      </Form>
+    </div>
+  );
+}
+//- catching the request
+export async function action({ request }) {
+  //- get the data from the Form
+  const formData = await request.formData();
+  const data = Object.fromEntries(formData);
+  //- clean-up data
+  const order = {
+    ...data,
+    cart: JSON.parse(data.cart),
+    priority: data.priority === "on",
+  };
+  //- if errors?
+  const errors = {};
+  if (!isValidPhone(order.phone)) {
+    errors.phone = "Please provide us your valid phone number!";
+  }
+  if (Object.keys(errors).length > 0) return errors;
+  //- if (!errors) ? `creating "POST" req to "createOrder" on API` : "return from function"
+  const newOrder = await createOrder(order);
+  return redirect(`/order/${newOrder.id}`);
+}
+export default CreateOrder;
+
+as in app.jsx:
+---
+{                          +------------------------+
+  path: "/order/new",     /                         |
+  element: <CreateOrder />,       //>>> ACTION & COMPONENT CONNECTION
+  action: createOrderAction,          |
+},                        \           |
+//                         +----------+
+ * 
+ * 
+ * ! COMPLETED =>next=> TAILWIND CSS (STYLING!)
  * 
  * 
  * 
