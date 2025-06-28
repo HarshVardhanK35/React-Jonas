@@ -4,6 +4,7 @@
  * ! 1. Section Overview
  * ---------------------
  * 
+ * 
  * ! 2. What is Tailwind CSS?
  * --------------------------
  * * def
@@ -25,7 +26,6 @@
  *      - markup looks unreadable: if we use lots of classes
  *      - we need to learn lot of classes 
  *      - we need to install and set-up tailwind for every project
- *      - 
  * 
  * 
  * ! 3. Setting Up Tailwind CSS
@@ -66,6 +66,7 @@
  *      >>> classname="style-property"
  * 
  * * we can search for any property that we want to style
+ * 
  * 
  * ! 4.  Working With Color
  * ------------------------
@@ -137,7 +138,6 @@
  * - we should have to use only pre-defined classes from "tailwindcss"
  * 
  * 
- * 
  * ! 6. The Box Model: Spacing, Borders, and Display
  * -------------------------------------------------
  * (SPACING: using classes for "margin", "padding" etc., inside box-model)
@@ -198,7 +198,6 @@
  * - use tailwind-docs and search for "space-between" and other properties
  * 
  * 
- * 
  * ! 7. Responsive Design
  * ----------------------
  * (fundamental concept to understand in Tailwind CSS)
@@ -254,7 +253,6 @@
  * - TC-property: justify-between
  * 
  * 
- * 
  * ! 9. Using CSS Grid
  * ------------------- 
  * - to make a "grid" container we have to use class: "grid"
@@ -287,16 +285,228 @@ export default AppLayout;
  * -----------------------------------------------------
  * (learn: element states ~ "hover", "disabled", "focus")
  * 
+ * ! SKIPPED
  * 
  * 
  * 
+ * ! 11. Styling Form Elements
+ * ---------------------------
+ * ex:
+<div>
+  <input
+    className="rounded-full border border-stone-100 px-4 py-2 text-sm transition-all duration-300 placeholder:text-stone-400 focus:outline-none focus:ring focus:ring-yellow-300 w-full md:px-6 md:py-3"
+    type="text"
+    name="address"
+    required
+  />
+</div>
+ * 
+ * - as we styled this component, we can apply same styles to other form-elements 
+ * that is // => re-using of styles
+ * that will be taught in next lecture!
+ * 
+ * 
+ * ! 12. Reusing Styles With @apply
+ * --------------------------------
+ * (reusing of styles inside a form-component: using tailwind's "APPLY" directive)
+ * 
+ * - open index.css (main-styles-file)
+ *    - by doing the following..
+ * ex:
+@layer components {
+  .input {
+    @apply rounded-full border border-stone-100 px-4 py-2 text-sm transition-all duration-300 placeholder:text-stone-400 focus:outline-none focus:ring focus:ring-yellow-300 w-full md:px-6 md:py-3
+  }
+}
+ * 
+ * - no we can apply "input" (.input {..}) as a value while styling same form-elements
+ * ex:
+<div>
+  <label>First Name</label>
+  <input className="input" type="text" name="customer" required />
+</div>
+<div>
+  <label>Phone number</label>
+  <div>
+    <input className="input" type="tel" name="phone" required />
+  </div>
+  {formErrors?.phone ? <p>{formErrors.phone}</p> : ""}
+</div>
+<div>
+  <label>Address</label>
+  <div>
+    <input className="input" type="text" name="address" required />
+  </div>
+</div>
+ * 
+ * $ NOTE:
+ * - we cannot follow this way doing CSS.. as this resembles writing CSS but not Tailwind-CSS 
+ * (CSS: writing classes inside a separate file and applying them..)
+ * 
+ * 
+ * ! 13. Reusing Styles With React Components
+ * ------------------------------------------
+ * (best way: to reuse styles in Tailwind-CSS >>> by creating react-components)
+ * - while creating a button.. we have applied many TC-classes to that.. 
+<button
+  disabled={isSubmitting}
+
+  className="inline-block rounded-full bg-yellow-400 px-4 py-3 uppercase font-semibold tracking-wide text-stone-800 hover:bg-yellow-300 transition-colors duration-300 focus:bg-yellow-300 focus:outline-none focus:ring focus:ring-yellow-300 focus:ring-offset-1 disabled:cursor-not-allowed"
+>
+  {isSubmitting ? "Placing order..." : "Order now"}
+</button> 
+ * 
+ * - to re-use a style (cause of so many properties or classes!)
+ * - we created below button-component!
+ * ex:
+function Button({ children, onDisabled }) {
+  return (
+    <button
+      disabled={onDisabled}
+      className="inline-block rounded-full bg-yellow-400 px-4 py-3 uppercase font-semibold tracking-wide text-stone-800 hover:bg-yellow-300 transition-colors duration-300 focus:bg-yellow-300 focus:outline-none focus:ring focus:ring-yellow-300 focus:ring-offset-1 disabled:cursor-not-allowed"
+    >
+      {children}
+    </button>
+  );
+}
+export default Button;
+ * 
+ * - so that we can use it inside "CreateOrder.jsx"
+ * ex:
+<Button onDisabled={isSubmitting}>
+  {isSubmitting ? "Placing order..." : "Order now"}
+</Button>
+ * 
+ * 
+ * ! 14. Absolute Positioning, z-index, and More
+ * ---------------------------------------------
+ * (formatting "Loader.jsx")
+ * - to render a loading-spinner over a page at middle of the page by blurring the page behind it!
+ * 
+ * - to make the element position absolutely we have to use:
+ * >>> class: absolute
+ * 
+ * - to stretch "Loader" all over the page:
+ *    - we can make top, bottom, left and right to zero
+ * >>> class: inset-0 
+ * 
+ * - add opacity to a component:
+ *    - by adding slash to the background-color-[intensity_value]/[value]
+ * >>> bg-slate-300/50
+ * 
+ * - to add blur to the background, we can use [backdrop-blur-[value]]:
+ * >>> backdrop-blur-sm
+ * 
+ * - to make an element place at center of a page:
+ *    - use flex-box:
+ * >>> flex items-center justify-center 
+ * 
+ * 
+ * ! 15. Configuring Tailwind: Custom Font Family
+ * ----------------------------------------------
+ * (tailwind's advantage: extreme flexibility to configure tailwind)
+ * - open "tailwind.config.js"
+ *    - where we can override everything that was set to default!
+ *      - here we are overriding default font-family
+ *
+ * - inside "tailwind.config.js" 
+ *    - if we want to keep older styles and add new ones we have to place new ones inside "extend: {}" 
+ * ex:
+extend: {
+  colors: {
+    pizza: "#9876"
+  }
+},
+ * 
+ * - above code add new color >>> pizza: "#9876"
+ *    - to the existing colors
+ * 
+ * - but we have to change most imp one is "height" >>> and we have to change "screen"
+ *    - default style is..
+height: {
+  screen: '100vh'
+}
+ * 
+ * - so we have to change this value.. which may rise problems with mobile-screens 
+ * ex:
+extend: {
+  colors: {
+    pizza: "#9876"
+  },
+  height: {
+    screen: "100dvh"
+  }
+},
+ * 
+ * - we have to change from "vh" to "dvh"
+ * >>> dvh
+ *    - dynamic-viewport-height units 
+ * (this removes problem with mobile screen-heights)
+ * 
+ * 
+ * ! 16. Styling the Menu
+ * ----------------------
+ * - between every "MenuItem" we need a "line" not a "space"
+ *    - so we have to use "divide: for lines" not "space-class: for spaces"
+ * 
+ * - so we have to apply whatever the class might be either "space" or "divide" on parent-element.. (so that styles can be applied to children)
+ * 
+ * - we wanted to add a line for list-elements "li" here!
+ *    - so we have to apply "divide" on "ul"
+ * ex:
+<ul className="divide-y divide-stone-300 px-2">
+  {menu.map((pizza) => (
+    <MenuItem key={pizza.id} pizza={pizza} />
+  ))}
+</ul>
+ * 
+ * - hence the complete file with styles is: 
+ * ex:
+Menu.jsx
+---
+return (
+  <ul className="divide-y divide-stone-300 px-2">
+    {menu.map((pizza) => (
+      <MenuItem key={pizza.id} pizza={pizza} />
+    ))}
+  </ul>
+);
+
+MenuItem.jsx:
+---
+return (
+  <li className="flex gap-3 py-2">
+    <img
+      src={imageUrl}
+      alt={name}
+      className={`h-[8rem] ${soldOut ? "opacity-[0.6] grayscale" : ""}`}
+    />
+
+    <div className="flex flex-col grow pt-[2px]">
+      <p className="font-medium">{name}</p>
+
+      <p className="text-sm italic text-stone-600 capitalize">
+        {ingredients.join(", ")}
+      </p>
+
+      <div className="mt-auto flex items-center justify-between">
+        {!soldOut ? (
+          <p className="text-sm">{formatCurrency(unitPrice)}</p>
+        ) : (
+          <p className="text-sm uppercase font-medium text-stone-400">
+            Sold out
+          </p>
+        )}
+
+        <Button type="small">Add to cart</Button>
+      </div>
+    </div>
+  </li>
+);
  * 
  * 
  * 
- * 
- * 
- * 
- * ! 1. Section Overview
+ * ! 17. Styling the Cart
  * ---------------------
  * 
  * ! 1. Section Overview
@@ -307,18 +517,6 @@ export default AppLayout;
  * 
  * ! 1. Section Overview
  * ---------------------
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
  * 
  * 
  * 

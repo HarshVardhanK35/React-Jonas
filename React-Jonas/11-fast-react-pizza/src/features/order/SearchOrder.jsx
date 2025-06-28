@@ -20,9 +20,10 @@ function SearchOrder() {
   return (
     <form onSubmit={handleSubmit}>
       <input
-        placeholder="Search order ID..."
         value={query}
         onChange={handleSearch}
+        placeholder="Search orderID..."
+        className="rounded-full px-1 py-2 text-xs md:px-4 md:py-2 md:text-sm bg-yellow-50 placeholder:text-stone-500 w-28 md:w-64 md:focus:w-72 transition-all duration-300 focus:outline-none focus:ring focus:ring-yellow-400 focus:ring-opacity-50"
       />
     </form>
   );
