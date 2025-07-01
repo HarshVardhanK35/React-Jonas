@@ -1,6 +1,8 @@
 import { Form, redirect, useActionData, useNavigation } from "react-router-dom";
 import { createOrder } from "../../services/apiRestaurant";
 import Button from "../../ui/Button";
+import { useSelector } from "react-redux";
+import { getUser } from "../user/userSlice";
 
 // https://uibakery.io/regex-library/phone-number
 const isValidPhone = (str) =>
@@ -33,11 +35,13 @@ const fakeCart = [
 ];
 
 function CreateOrder() {
+  const userDetails = useSelector(getUser);
+
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
 
   const formErrors = useActionData();
-  console.log(formErrors);
+  // console.log(formErrors);
 
   // const [withPriority, setWithPriority] = useState(false);
   const cart = fakeCart;
@@ -54,6 +58,7 @@ function CreateOrder() {
             className="input grow" // class: "input" from index.css
             type="text"
             name="customer"
+            defaultValue={userDetails.username}
             required
           />
         </div>
@@ -67,7 +72,13 @@ function CreateOrder() {
               name="phone"
               required
             />
-          {formErrors?.phone ? <p className="text-xs mt-2 bg-red-50 text-red-700 p-2">{formErrors.phone}</p> : ""}
+            {formErrors?.phone ? (
+              <p className="text-xs mt-2 bg-red-50 text-red-700 p-2">
+                {formErrors.phone}
+              </p>
+            ) : (
+              ""
+            )}
           </div>
         </div>
 
@@ -92,7 +103,9 @@ function CreateOrder() {
             // value={withPriority}
             // onChange={(e) => setWithPriority(e.target.checked)}
           />
-          <label htmlFor="priority" className="font-medium">Want to yo give your order priority?</label>
+          <label htmlFor="priority" className="font-medium">
+            Want to yo give your order priority?
+          </label>
         </div>
 
         <div>
