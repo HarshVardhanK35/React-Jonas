@@ -1,8 +1,16 @@
+import { useState } from "react";
 import { Form, redirect, useActionData, useNavigation } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+
 import { createOrder } from "../../services/apiRestaurant";
+import { formatCurrency } from "../../utils/helpers";
+import EmptyCart from "../cart/EmptyCart";
 import Button from "../../ui/Button";
-import { useSelector } from "react-redux";
-import { getUser } from "../user/userSlice";
+
+import store from "../../store";
+import { fetchAddress, getUser } from "../user/userSlice";
+import { clearCart, getCart, getTotalCartPrice } from "../cart/cartSlice";
+import LinkButton from "../../ui/LinkButton";
 
 // https://uibakery.io/regex-library/phone-number
 const isValidPhone = (str) =>
@@ -10,32 +18,8 @@ const isValidPhone = (str) =>
     str
   );
 
-const fakeCart = [
-  {
-    pizzaId: 12,
-    name: "Mediterranean",
-    quantity: 2,
-    unitPrice: 16,
-    totalPrice: 32,
-  },
-  {
-    pizzaId: 6,
-    name: "Vegetale",
-    quantity: 1,
-    unitPrice: 13,
-    totalPrice: 13,
-  },
-  {
-    pizzaId: 11,
-    name: "Spinach and Mushroom",
-    quantity: 1,
-    unitPrice: 15,
-    totalPrice: 15,
-  },
-];
-
 function CreateOrder() {
-  const userDetails = useSelector(getUser);
+  const [withPriority, setWithPriority] = useState(false);
 
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
@@ -43,8 +27,30 @@ function CreateOrder() {
   const formErrors = useActionData();
   // console.log(formErrors);
 
-  // const [withPriority, setWithPriority] = useState(false);
-  const cart = fakeCart;
+  const dispatch = useDispatch();
+
+  const cart = useSelector(getCart);
+  const totalCartPrice = useSelector(getTotalCartPrice);
+
+  const userDetails = useSelector(getUser);
+  const {
+    username,
+    status: addressStatus,
+    position,
+    address,
+    error: errorAddress,
+  } = userDetails;
+  const isLoadingAddress = addressStatus === "loading";
+
+  const priorityPrice = withPriority ? 0.15 * totalCartPrice : 0;
+  const totalPrice = totalCartPrice + priorityPrice;
+
+  if (!cart.length) return <EmptyCart />;
+
+  function getUserAddress(e) {
+    e.preventDefault();
+    dispatch(fetchAddress());
+  }
 
   return (
     <div className="px-4 py-6">
@@ -58,7 +64,7 @@ function CreateOrder() {
             className="input grow" // class: "input" from index.css
             type="text"
             name="customer"
-            defaultValue={userDetails.username}
+            defaultValue={username}
             required
           />
         </div>
@@ -82,16 +88,38 @@ function CreateOrder() {
           </div>
         </div>
 
-        <div className="mb-5 flex gap-2 flex-col sm:flex-row sm:items-center">
-          <label className="sm:basis-40">Address</label>
-          <div className="grow">
+        <div className="mb-5 flex gap-2 flex-col sm:flex-row sm:items-center relative">
+          <label className="sm:basis-40 ">Address</label>
+          <div className="grow ">
             <input
               className="input w-full" // class: "input" from index.css
               type="text"
               name="address"
+              disabled={isLoadingAddress}
+              defaultValue={address}
               required
             />
+            {addressStatus === "error" ? (
+              <p className="text-xs mt-2 bg-red-50 text-red-700 p-2">
+                {errorAddress}
+              </p>
+            ) : (
+              ""
+            )}
           </div>
+          {!position.latitude && !position.longitude ? (
+            <span className="absolute right-[3px] top-[34px] z-50 sm:right-[3px] sm:top-[3px]">
+              <Button
+                onDisabled={isLoadingAddress}
+                type="small"
+                onClick={getUserAddress}
+              >
+                Get position
+              </Button>
+            </span>
+          ) : (
+            ""
+          )}
         </div>
 
         <div className="mb-12 flex items-center gap-2">
@@ -100,8 +128,8 @@ function CreateOrder() {
             type="checkbox"
             name="priority"
             id="priority"
-            // value={withPriority}
-            // onChange={(e) => setWithPriority(e.target.checked)}
+            value={withPriority}
+            onChange={(e) => setWithPriority(e.target.checked)}
           />
           <label htmlFor="priority" className="font-medium">
             Want to yo give your order priority?
@@ -112,8 +140,21 @@ function CreateOrder() {
           {/* specify "hidden-input" to get data into "action-fn" without being Form-Field */}
           <input type="hidden" name="cart" value={JSON.stringify(cart)} />
 
-          <Button type="primary" onDisabled={isSubmitting}>
-            {isSubmitting ? "Placing order..." : "Order now"}
+          {/* sending location details to "action-req" */}
+          <input
+            type="hidden"
+            name="position"
+            value={
+              position.longitude && position.latitude
+                ? `${position.latitude}, ${position.longitude}`
+                : ""
+            }
+          />
+
+          <Button type="primary" onDisabled={isSubmitting || isLoadingAddress}>
+            {isSubmitting
+              ? "Placing order..."
+              : `Order now for ${formatCurrency(totalPrice)}`}
           </Button>
         </div>
       </Form>
@@ -131,8 +172,9 @@ export async function action({ request }) {
   const order = {
     ...data,
     cart: JSON.parse(data.cart),
-    priority: data.priority === "on",
+    priority: data.priority === "true",
   };
+  // console.log(order);
 
   // if errors?
   const errors = {};
@@ -143,6 +185,9 @@ export async function action({ request }) {
 
   // if (!errors) ? `creating "POST" req to "createOrder" on API` : "return from function"
   const newOrder = await createOrder(order);
+
+  store.dispatch(clearCart());
+
   // after receiving newOrder we have to navigate (but we can't use "useNavigate" inside reg-fun)
   return redirect(`/order/${newOrder.id}`);
 }

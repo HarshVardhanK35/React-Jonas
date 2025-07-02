@@ -31,6 +31,9 @@ const cartSlice = createSlice({
       // keeping everything related to quantity in sync!
       item.quantity = item.quantity - 1;
       item.totalPrice = item.quantity * item.unitPrice;
+
+      // CHECK: item-quantity below 0?
+      if (item.quantity === 0) cartSlice.caseReducers.deleteItem(state, action);
     },
     clearCart(state) {
       state.cart = [];
