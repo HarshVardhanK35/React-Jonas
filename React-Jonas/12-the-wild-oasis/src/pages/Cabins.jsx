@@ -21,7 +21,9 @@ function Cabins() {
       </Row>
       <Row type="vertical">
         <CabinTable />
-        <Button onClick={handleShow}>Add new cabin</Button>
+        <Button onClick={handleShow}>
+          {showForm ? "Close form" : "Add new cabin"}
+        </Button>
         {showForm ? <CreateCabinForm /> : ""}
       </Row>
     </>

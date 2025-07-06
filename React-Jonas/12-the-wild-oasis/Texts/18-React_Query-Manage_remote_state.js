@@ -759,36 +759,468 @@ export default CreateCabinForm;
  * --------------------------
  * (react-hook-form popular for form-error-validation)
  * 
+ * - till now we haven't added validation to the form
+ * (that is making every form-field as "required")
  * 
+ * - {...register()} to this register function inside <Input> HTML-Styled component
+ *    - we can add more after "<id>" that was provided as argument
+ *        (we can pass "required" key with some value to it) 
+ * [code] 
+<FormRowStyled>
+  <Label htmlFor="name">Cabin name</Label>
+  <Input
+    type="text"
+    id="name"
+    {...register("name", {
+      required: "This field is required!",    // >>> we can make this field as "required"!
+    })}
+  />
+  {errors?.name?.message ? <Error>{errors.name.message}</Error> : ""}
+</FormRowStyled>
  * 
+ * - if no value is entered into this field: errors will be "registered"
+ * ? How to catch these form-errors then ?
+ *    - we have "handleSubmit()" on total <Form> HTML-element
+<Form onSubmit={handleSubmit(onHandleSubmit, onHandleError)}>
+  ...
+</Form>
  * 
+ * - this handleSubmit() will check for every form-field validations 
+ *    - if no error ? handleSubmit(onHandleSubmit) "onHandleSubmit" is executed
+ *      - or "handleError" will be executed >>> if there are errors 
  * 
+ * - to catch the errors, we use "onHandleError" function will be executed!
+ * [code]
+function onHandleError(errors) {
+  console.log(errors);
+}
  * 
+ * - {...register()} this also takes in "min" key 
+ * [ex]
+{...register("maxCapacity", {
+  required: "This field is required!",
+  min: {
+    value: 1,     
+    message: "Capacity must be at least 1",     // >>> if "min-value" is not satisfied "min-message" will be the "error.message"
+  },
+})}
  * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * ! 11. Introducing Another Library: React Hook Form
- * --------------------------------------------------
- * 
- * ! 12. Introducing Another Library: React Hook Form
- * --------------------------------------------------
- * 
- * ! 13. Introducing Another Library: React Hook Form
- * --------------------------------------------------
+ * >>> case:
+ * - "price-value" must be greater than "discount-value" 
+ * (so we need to get "price-field-value" into "discount-field" to check and compare)
  *
- * ! 14. Introducing Another Library: React Hook Form
- * --------------------------------------------------
+ * - we can use "validate" inside {...register()} function
+ * [code]
+{...register("discount", {
+  required: "This field is required!",
+  validate: function (value) {          // >>> [key: value] "validate" key takes in CB function as value
+    return (
+      value <= getValues().regularPrice ||          // >>> getValues used here to get other form-field values
+      "Discount must be less than regular price"
+    );
+  },
+})}
  * 
- * ! 15. Introducing Another Library: React Hook Form
- * --------------------------------------------------
+ * 
+ * >>> getValues
+ * - useForm hook from react-hook-form will also provides "getValues" [which gets-values into a field from other fields]
+ * [code]
+const { register, handleSubmit, reset, getValues } = useForm();
+ * 
+ * - validate function gets value from present-field
+ *    - getValues() on calling it returns an object and we can use [dot(.)] notation to access other field values
+ * (if condition "price < discount" is not satisfied || "error-message" will be returned)
+ * 
+ * >>> catching error message 
+ * - when any validate-function is not satisfied.. it returns an error
+ *    - to catch that we have below function
+ * [code]
+function CreateCabinForm() {
+  const { register, handleSubmit, reset, getValues, formState } = useForm();
+
+  const { errors } = formState;
+  console.log(errors);
+
+  return()
+}
+ * 
+ * - "formState" from "useForm(): a-custom-hook" catches every error from form [if there are any validation-errors]
+ * 
+ * >>> rendering form errors
+ *    - caught errors need to be rendered beside every form-field
+ * [code]
+<FormRowStyled>
+  <Label htmlFor="name">Cabin name</Label>
+  <Input
+    type="text"
+    id="name"
+    {...register("name", {
+      required: "This field is required!",
+    })}
+  />
+  {errors?.name?.message ? <Error>{errors.name.message}</Error> : ""}   // >>> caught errors and optional-chaining "?."
+</FormRowStyled>
+ * 
+ * - code here is.. attaching error from respective field to it's field 
+ * 
+ * errors?.name?.message
+ *    - checking errors using "optional-chaining" 
+ *      - if exists ? access id-value [that is "name"] using (dot-notation)
+ *        - if any error exists on error.field-id ? access message from it 
+ * 
+ * ? abstracting every repeated code into a component ?
+ *    - as the similar type of code has been repeated for every form-field
+ * 
+ * [abstracted_code]
+function FormRow({ label, error, children }) {
+  return (
+    <StyledFormRow>
+      {label ? <Label htmlFor={children.props.id}>{label}</Label> : ""}   // >>> concentrate
+      {children}
+      {error ? <Error>{error}</Error> : ""}
+    </StyledFormRow>
+  );
+}
+-------------------------------------- CHILDREN-PROP --------------------------------------
+( --- below is children prop that was passed into above FormRow({children}) --- )
+<Input
+  type="text"                               |
+  id="name"                                 | // >>> children.props.id
+  {...register("name", {                    | // >>> children = input and accessing id-value from children-component props
+    required: "This field is required!",    |
+  })}
+/>
+
+ * 
+ * $ CONCENTRATE
+ * - as "<Label htmlFor="name">{label}</Label>" need to be input-field's "id" 
+ *    - children is "input" and "id" inside "input-field" acts as props and accessing it using [props.id]
+ * 
+ * 
+ * ! 11. Uploading Images to Supabase
+ * ----------------------------------
+ * to upload an image >>> we have to construct a form-field to upload directly from an application to "storage-buckets" of "supabase"
+ * 
+ * >>> in CreateCabinForm.jsx
+ * - following form-field has parent and children
+ * [form-field]
+-------------------------- PARENT -------------------------- 
+function FormRow({ label, error, children }) {
+  return (
+    <StyledFormRow>
+      {label ? <Label htmlFor={children.props.id}>{label}</Label> : ""}
+      {children}
+      {error ? <Error>{error}</Error> : ""}
+    </StyledFormRow>
+  );
+}
+-------------------------- ACTUAL-FORM-FIELD -------------------------- 
+<FormRow label="Cabin photo" error={errors?.image?.message}>    //- PARENT
+  <FileInput                                                    //- CHILDREN
+    id="image"                                  
+    accept="image/*"                          // >>> accepts an image
+    type="file"             // >>> type- "file"
+    {...register("image", {
+      required: "This field is required!",
+    })}
+  />
+</FormRow>
+ * 
+ * - also change previous code...
+function onHandleSubmit(data){
+  mutate(data)
+}
+ * 
+ * - change it to...
+function onHandleSubmit(data) {
+  mutate({ ...data, image: data?.image[0] });   // >>> mutating the existing "data"
+  console.log(data);
+}
+ * 
+ * 
+ * - above field takes a file from local-machine
+ *    (on logging to console will return following OBJECT..)
+image: FileList 
+  |
+  lastModified: 1744789497170
+  lastModifiedDate: Wed Apr 16 2025 13:14:57 GMT+0530 (India Standard Time) {}
+  name: "cabin-002.jpg"
+  size: 211817
+  type: "image/jpeg"
+  webkitRelativePath: ""
+ * 
+ * >>> supabase api- to upload an image 
+ * #1 formatting the upload - LOGIC:
+ * to store inside supabase's storage-buckets we need URL type: ["https://tnyqooxosavmcfmyoweh.supabase.co/storage/v1/object/public/cabin-images//cabin-001.jpg"]
+ * but we have only image-name: ["cabin-002.jpg"]
+ *    [--- need to convert what we have to exact URL path ---]
+ * [code]
+ * ------ 
+// >>> in "apiCabins.js" [format image-name into URL]
+export async function createCabin(newCabin) {
+  // - 0. format image storage-URL
+  // - 0.1 making unique image-name
+  const imgName = `${Math.random()}-${newCabin.image.name}`.replaceAll("/", "")   // supabase create new folders if this name may contains slashes
+  
+  // - 0.2 converting image-name "cabin-002.jpg" to an image-path URL here:
+  const imgPath = `${supabaseUrl}/storage/v1/object/public/cabin-images/${imgName}`;
+
+  // - 1. Creating new cabin
+  const { data, error } = await supabase
+    .from("cabins")
+    .insert([{...newCabin, image: imgPath}])
+    .select();
+  if (error) {
+    console.error(error);
+    throw new Error("Cabins could not be deleted");
+  }
+  return data;
+}
+ * 
+ * #2 uploading image - SUPABASE_PROCESS:
+ * >>> RLS-policies
+ * - open project on "supabase.com" => on left sidebar click on "storage" => click on "policies" 
+ *    - for "cabin-images" => click on "new policy" to create a policy => select "for full customization" 
+ * temporarily: 
+ * - set Policy name: "Allow all operations"
+ * - select every option under "Allowed operation": [SELECT | INSERT | UPDATE | DELETE]
+ *    [default]
+ *    - under "Target roles" set to: "defaults"
+ *    - under "Policy definition": bucket_id = 'cabin-images' 
+ * 
+ * >>> URL
+ * simply open URL: [https://supabase.com/docs/reference/javascript/installing] in browser
+ * - on left sidebar => scroll down upto "STORAGE" => click on "upload a file"
+ * [grab-code]
+const { data, error } = await supabase
+  .storage
+  .from('avatars')    // >>> change it to bucket_name: "cabin-images"
+  .upload('public/avatar1.png', avatarFile, {
+    cacheControl: '3600',
+    upsert: false
+  })
+ * 
+ * - paste above code into "apiCabins.js" file under >>> create-cabin -> uploading an image
+ * [total-code]
+export async function createCabin(newCabin) {
+  // https://tnyqooxosavmcfmyoweh.supabase.co/storage/v1/object/public/cabin-images//cabin-001.jpg
+
+  // - 0. format image storage-URL
+  // - 0.1 unique image-name
+  const imgName = `${Math.random()}-${newCabin.image.name}`.replaceAll("/", ""); // supabase create new folders if this name may contains slashes
+
+  // - 0.2 image-path
+  const imgPath = `${supabaseUrl}/storage/v1/object/public/cabin-images/${imgName}`;
+
+  // - 1. Creating new cabin
+  const { data, error } = await supabase
+    .from("cabins")
+    .insert([{ ...newCabin, image: imgPath }])
+    .select();
+
+  if (error) {
+    console.error(error);
+    throw new Error("Cabins could not be deleted");
+  }
+
+  // - 2. uploading image
+  const { error: storageError } = await supabase.storage
+    .from("cabin-images")
+    .upload(imgName, newCabin.image);
+
+  // - 3. Delete cabin if there was an ERROR uploading an image
+  if (storageError) {
+    await supabase.from("cabins").delete().eq("id", data.id);
+    console.log(storageError);
+    throw new Error("Cabin images could not be uploaded and cabin was not created!");
+  }
+  return data;
+}
+ * 
+ * 
+ * 
+ * ! 12. Editing a Cabin
+ * ---------------------
+ * (for this we have to re-use existing form)
+ * - remember that only cabins which are stored inside DB gets an id
+ *    - so, whenever we want to edit a cabin.. then we send that id to form
+ * 
+ * - based on that id only we automatically fill the form that we got from the DB
+ * process starts... 
+ * [code]
+ * ------
+-------------------------------- GET DATA FROM "CabinTable" --------------------------------
+function CabinTable() {
+  const {
+    isLoading,
+    data: cabins,
+    error,
+  } = useQuery({
+    queryKey: ["cabins"],
+    queryFn: getCabins,       // >>> responsible to "getCabins"- data: function defined inside "apiCabins"
+  });
+  return( ... )
+}
+-------------------------------------------------------------------------------------------- 
+function CabinRow({ cabin }) {
+  const [showForm, setShowForm] = useState(false);
+  function showEditForm() {
+    setShowForm((showForm) => !showForm);
+  }
+  return (
+    <>
+      <TableRow role="row">
+        <Img src={image} />
+        <Cabin>{name}</Cabin>
+        <div>Fits up to {maxCapacity}</div>
+        <Price>{formatCurrency(regularPrice)}</Price>
+        <Discount>{formatCurrency(discount)}</Discount>
+
+        <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
+          <button onClick={showEditForm}>{showForm ? "Close" : "Edit"}</button>
+          <button onClick={() => mutate(cabinId)} disabled={isDeleting}>
+            Delete
+          </button>
+        </div>
+      </TableRow>
+      {showForm ? <CreateCabinForm cabinToEdit={cabin} /> : ""}   // >>> sending received data from "CabinTable" to "CreateCabinForm"
+    </>
+  );
+}
+export default CabinRow;
+ * 
+ * - above we are sending getCabins-data to "CreateCabinForm"
+ * [code]
+function CreateCabinForm({ cabinToEdit = {} }) {
+  const { id: editId, ...editValues } = cabinToEdit;    // >>> contains "id" when it is fetched from DB
+  const isEditSession = Boolean(editId);            // >>> checking is it edit-session or not! 
+
+  const { register, handleSubmit, reset, getValues, formState } = useForm({
+    defaultValues: isEditSession ? editValues : {},
+  });
+  const { errors } = formState;
+  return(
+    ---
+  )
+}
+ * 
+ * ? view the code and understand from GitHub- Repo 
+ * 
+ * 
+ * ! 13. Abstracting React Query Into Custom Hooks
+ * -----------------------------------------------
+ * (created a custom-hook for every CRUD operation functionality)
+ *
+ * 
+ * ! 14. Duplicating Cabins
+ * ------------------------
+ * (used createCabin-functionality to duplicate a cabin with identical data)
+ * 
+ * 
+ * ! 15. Fetching Applications Settings
+ * ------------------------------------
+ * (focus: fetching app-settings using React-Query)
+ * - two CRUD operations: [fetch / get & update settings]
+ * [code]
+ * ------
+import supabase from "./supabase";
+//>>> 1) get-settings
+export async function getSettings() {
+  const { data, error } = await supabase.from("settings").select("*").single();
+
+  if (error) {
+    console.error(error);
+    throw new Error("Settings could not be loaded");
+  }
+  return data;
+}
+--------------------------------------------------------------------------------------
+// We expect a newSetting object that looks like {setting: newValue}
+// >>> 2) update-settings
+export async function updateSetting(newSetting) {
+  const { data, error } = await supabase
+    .from("settings")
+    .update(newSetting)
+    // There is only ONE row of settings, and it has the ID=1, and so this is the updated one
+    .eq("id", 1)
+    .single();
+
+  if (error) {
+    console.error(error);
+    throw new Error("Settings could not be updated");
+  }
+  return data;
+}
+ * 
+ * - now create RLS: new policies for both operations
+ * - authentication => click - "policies" => scroll-down to "settings" => click - "create policy" 
+ *    - "Policy Name": "Enable update access for all users" => "Policy Command": select - "UPDATE"
+ * inside "Use options above to edit"
+ * create policy "Enable update access for all users" 
+ * on "public"."settings"
+ * as PERMISSIVE
+ * for UPDATE
+ * to public
+ * using (true); 
+ * with check (true);     // >>> edit this to "true"
+ * 
+ * $ REMEMBER:
+ * - we will not "create" more rows for settings [we will only have one row with one setting: id-1]
+ *    - so we will have only two operations that are: [READ / FETCH existing setting and UPDATING it]
+ * 
+ * >>> UpdateSettingForm.jsx
+ * - in here, we have a form to read and update settings from DB
+ * [existing_code] 
+ * ---------------
+function UpdateSettingsForm() {
+  return (
+    <Form>
+      <FormRow label='Minimum nights/booking'>
+        <Input type='number' id='min-nights' />
+      </FormRow>
+      <FormRow label='Maximum nights/booking'>
+        <Input type='number' id='max-nights' />
+      </FormRow>
+      <FormRow label='Maximum guests/booking'>
+        <Input type='number' id='max-guests' />
+      </FormRow>
+      <FormRow label='Breakfast price'>
+        <Input type='number' id='breakfast-price' />
+      </FormRow>
+    </Form>
+  );
+}
+ * 
+ * ? process:
+ * - fetch settings-data => place every data into it's respective field! 
+ * 
+ * >>> 1) custom-hook 
+ * - creating custom-hook directly [from now on..]
+ * [code]
+ * ------
+import { useQuery } from "@tanstack/react-query";
+import { getSettings } from "../../services/apiSettings";
+
+function useGetSettings() {
+  const {
+    isLoading,
+    error,
+    data: settings,
+  } = useQuery({
+    queryKey: ["settings"],
+    queryFn: getSettings, // needs to be an async-fn (OR) fn need to return a "promise"
+  });
+  return { settings, isLoading, error };
+}
+export default useGetSettings;
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
  * 
  * ! 16. Introducing Another Library: React Hook Form
  * --------------------------------------------------
