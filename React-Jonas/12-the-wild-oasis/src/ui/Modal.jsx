@@ -1,3 +1,6 @@
+import { cloneElement, createContext, useContext, useState } from "react";
+import { createPortal } from "react-dom";
+import { HiXCircle } from "react-icons/hi2";
 import styled from "styled-components";
 
 const StyledModal = styled.div`
@@ -48,3 +51,56 @@ const Button = styled.button`
     color: var(--color-grey-500);
   }
 `;
+
+// 1. create-context in name of Modal
+const ModalContext = createContext();
+
+// 2. create a parent-component
+function Modal({ children }) {
+  const [openName, setOpenName] = useState(""); // start with no empty window
+
+  // A. handler functions
+  // closing modal-window
+  function close() {
+    setOpenName(""); // setting to "" to close window: the-initial-state
+  }
+  const open = setOpenName; // setting simply to "openName-state-var"
+
+  return (
+    <ModalContext.Provider value={{ openName, open, close }}>
+      {children}
+    </ModalContext.Provider>
+  );
+}
+
+// B. creating button
+function Open({ children, opens: opensWindowName }) {
+  const { open } = useContext(ModalContext);
+
+  return cloneElement(children, { onClick: () => open(opensWindowName) });
+}
+
+function Window({ children, name }) {
+  const { openName, close } = useContext(ModalContext);
+
+  if (name == openName) {
+    return createPortal(
+      <Overlay>
+        <StyledModal>
+          <Button onClick={close}>
+            <HiXCircle />
+          </Button>
+          <div>{children}</div>
+        </StyledModal>
+      </Overlay>,
+      document.body
+    );
+  } else {
+    null;
+  }
+}
+
+Modal.Open = Open;
+Modal.Window = Window;
+
+export default Modal;

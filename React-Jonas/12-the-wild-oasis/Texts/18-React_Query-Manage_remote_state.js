@@ -1216,198 +1216,125 @@ export default useGetSettings;
  * 
  * 
  * 
- * 
- * 
- * 
- * 
- * 
- * 
  * ! 16. Introducing Another Library: React Hook Form
  * --------------------------------------------------
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
+ * (used "onBlur" to update settings here!)
+ * - useUpdateSettings.js: where actual update-logic lies 
+ * [code]
+ * ------
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { updateSetting as updateSettingApi } from "../../services/apiSettings";       // >>> actual fn from supabase API
+import toast from "react-hot-toast";
+
+function useUpdateSetting() {
+  const queryClient = useQueryClient();
+
+  const { mutate: updateSetting, isLoading: isUpdating } = useMutation({      // >>> useMutation to mutate existing rows
+    mutationFn: function (newData) {                
+      return updateSettingApi(newData);           // >>> no need of "id" here >>> as there is only one row to update
+    },    
+    onSuccess: function () {
+      toast.success("Settings updated successfully!");
+      queryClient.invalidateQueries({             
+        queryKey: ["settings"],                             // >>> invalidate- queries: so data always be in "stale" state
+      });
+    },
+    onError: function (err) {
+      toast.error(err.message);
+    },
+  });
+  return { isUpdating, updateSetting };
+}
+export default useUpdateSetting;
+------------------------------------------------ Update-Function from Supabase-API ------------------------------------------------
+export async function updateSetting(newSetting) {
+  const { data, error } = await supabase
+    .from("settings")
+    .update(newSetting)
+    .eq("id", 1)          // >>> There is only ONE row of settings, and it has the ID=1, and so this is the updated one
+    .single();
+
+  if (error) {
+    console.error(error);
+    throw new Error("Settings could not be updated");
+  }
+  return data;
+}
+ * 
+ * - this is imported into "UpdateSettingsForm.jsx" file to update via form
+ * [form]
+ * ------
+import Form from "../../ui/Form";
+import FormRow from "../../ui/FormRow";
+import Input from "../../ui/Input";
+import Spinner from "../../ui/Spinner";
+import useGetSettings from "./useGetSettings";
+import useUpdateSetting from "./useUpdateSetting";
+
+function UpdateSettingsForm() {
+  const { settings = {}, isLoading } = useGetSettings();
+  const { updateSetting, isUpdating } = useUpdateSetting();     // >>> custom-hooks for "READ" & "UPDATE" operations
+
+  const {
+    breakfastPrice,
+    maxBookingLength,
+    maxGuestsPerBooking,
+    minBookingLength,
+  } = settings;
+  if (isLoading) return <Spinner />;
+
+  function handleUpdate(e, field) {     
+    const value = e.target.value;
+    if (!value) return;
+    updateSetting({ [field]: value });      // >>> value will be sent to UPDATE-logic
+  }
+  return (
+    <Form>
+      <FormRow label="Minimum nights/booking">
+        <Input
+          type="number"
+          id="min-nights"
+          disabled={isUpdating}
+          defaultValue={minBookingLength}           
+          onBlur={(e) => handleUpdate(e, "minBookingLength")}   // >>> onBlur is used here! [takes in "event" and "field-to-update"!]
+        />
+      </FormRow>
+      <FormRow label="Maximum nights/booking">
+        <Input
+          type="number"
+          id="max-nights"
+          disabled={isUpdating}
+          defaultValue={maxBookingLength}
+          onBlur={(e) => handleUpdate(e, "maxBookingLength")}
+        />
+      </FormRow>
+      <FormRow label="Maximum guests/booking">
+        <Input
+          type="number"
+          id="max-guests"
+          disabled={isUpdating}
+          defaultValue={maxGuestsPerBooking}
+          onBlur={(e) => handleUpdate(e, "maxGuestsPerBooking")}
+        />
+      </FormRow>
+      <FormRow label="Breakfast price">
+        <Input
+          type="number"
+          id="breakfast-price"
+          disabled={isUpdating}
+          defaultValue={breakfastPrice}
+          onBlur={(e) => handleUpdate(e, "breakfastPrice")}
+        />
+      </FormRow>
+    </Form>
+  );
+}
+export default UpdateSettingsForm;
+ * 
+ * $ NOTE:
+ * - here "onBlur" is used for every form-field!
+ * 
+ * 
+ * ! COMPLETED !
  * 
  */
