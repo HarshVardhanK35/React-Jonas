@@ -2,6 +2,7 @@ import { cloneElement, createContext, useContext, useState } from "react";
 import { createPortal } from "react-dom";
 import { HiXCircle } from "react-icons/hi2";
 import styled from "styled-components";
+import useOutsideClick from "../hooks/useOutsideClick";
 
 const StyledModal = styled.div`
   position: fixed;
@@ -59,12 +60,12 @@ const ModalContext = createContext();
 function Modal({ children }) {
   const [openName, setOpenName] = useState(""); // start with no empty window
 
-  // A. handler functions
+  // handler functions
   // closing modal-window
   function close() {
     setOpenName(""); // setting to "" to close window: the-initial-state
   }
-  const open = setOpenName; // setting simply to "openName-state-var"
+  const open = setOpenName; // setting simply to "setOpenName-state-fun"
 
   return (
     <ModalContext.Provider value={{ openName, open, close }}>
@@ -73,24 +74,31 @@ function Modal({ children }) {
   );
 }
 
-// B. creating button
+// 3. create child component to help implementing common task
+// A. Open [child-1]
 function Open({ children, opens: opensWindowName }) {
   const { open } = useContext(ModalContext);
-
-  return cloneElement(children, { onClick: () => open(opensWindowName) });
+  // open: "setter fn" and on-an-event: "onClick changes the name here"
+  return cloneElement(children, { onClick: () => open(opensWindowName) }); // as state: "open" isn't available inside 'AddCabin' so we used "cloneElement-fn"
 }
 
+// B. Window [child-2]
 function Window({ children, name }) {
   const { openName, close } = useContext(ModalContext);
+
+  const { ref } = useOutsideClick(close);
 
   if (name == openName) {
     return createPortal(
       <Overlay>
-        <StyledModal>
+        <StyledModal ref={ref}>
+          {/* here 'onClick': triggers "close-fun" and sets 'openName' to {empty string: ""} */}
           <Button onClick={close}>
             <HiXCircle />
           </Button>
-          <div>{children}</div>
+
+          {/* used "cloneElement" here too! */}
+          <div>{cloneElement(children, { onCloseModal: close })}</div>
         </StyledModal>
       </Overlay>,
       document.body
@@ -100,6 +108,7 @@ function Window({ children, name }) {
   }
 }
 
+// 4. Add child components as properties to parent-component
 Modal.Open = Open;
 Modal.Window = Window;
 
