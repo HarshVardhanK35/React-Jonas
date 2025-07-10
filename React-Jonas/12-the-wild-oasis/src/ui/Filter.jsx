@@ -39,20 +39,22 @@ function Filter({ filterField, options }) {
   const [searchParams, setSearchParams] = useSearchParams();
 
   // for active prop
-  const currentFilter = searchParams.get(filterField) || options.at(0).value;
+  const currentFilter = searchParams.get(filterField) || options?.at(0).value;
 
   function handleClick(value) {
     searchParams.set(filterField, value);
+    if (searchParams.get("page")) setSearchParams("page", 1);
+
     setSearchParams(searchParams);
   }
 
   return (
     <StyledFilter>
-      {options.map((option) => (
+      {options?.map((option) => (
         <FilterButton
           onClick={() => handleClick(option.value)}
           key={option.label}
-          active={option.value === currentFilter}
+          active={option?.value === currentFilter}
           disabled={option.value === currentFilter}
         >
           {option.label}

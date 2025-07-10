@@ -877,12 +877,12 @@ function useFetchBookings() {
  * 
  * >>> this whole functionality has to be done inside individual booking detail page 
  * 
+ * * PLEASE REFER GITHUB FOR CODE AND IT'S DETAILS !
+ * 
+ * ! 13. Adding Optional Breakfast
+ * -------------------------------
  * 
  * 
- * 
- * 
- * ! 1. Checking Out a Booking (+ Fixing a Small Bug)
- * --------------------------------------------------
  * 
  * ! 1. Checking Out a Booking (+ Fixing a Small Bug)
  * --------------------------------------------------
