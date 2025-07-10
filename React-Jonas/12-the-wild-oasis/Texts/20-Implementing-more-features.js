@@ -881,14 +881,187 @@ function useFetchBookings() {
  * 
  * ! 13. Adding Optional Breakfast
  * -------------------------------
+ *  * PLEASE REFER GITHUB FOR CODE AND IT'S DETAILS !
+ * 
+ * ! 14. Checking Out a Booking (+ Fixing a Small Bug)
+ * ---------------------------------------------------
+ *  * PLEASE REFER GITHUB FOR CODE AND IT'S DETAILS !
+ * 
+ * ! 15. Deleting a Booking
+ * ------------------------
+ *  * PLEASE REFER GITHUB FOR CODE AND IT'S DETAILS !
+ * 
+ * ! 16. Authentication: User Login With Supabase
+ * ----------------------------------------------
+ * [inside browser]
+ * - inside supabase => navigate to "Authentication" => click on "Users" => click on "green btn - Add user" => click on "Create new user"
+ *    - set an "email-address" and "password" 
+ * (so that these credentials only have to be provided to login to access application)!
+ * 
+ * [inside VS-code]
+ * [code]
+ * ------
+// >>> apiAuth.js
+---
+export async function login(loginDetails) {
+  const { email, password } = loginDetails;
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: email,
+    password: password,
+  });
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data;
+}
+----------------------------------- CONNECTED -----------------------------------
+// >>> useLogin.js [CUSTOM-HOOK]
+---
+export function useLogin() {
+  const navigate = useNavigate();
+
+  const { mutate: loginFn, isLoading: isLoggingIn } = useMutation({
+    mutationFn: function ({ email, password }) {
+      return loginApi({ email, password });
+    },
+    onSuccess: function () {
+      navigate("/dashboard");
+    },
+    onError: function (err) {
+      console.log("Login ERROR", err);
+      toast.error("Provided login credentials are incorrect!");
+    },
+  });
+  return { loginFn, isLoggingIn };
+}
+----------------------------------- CONNECTED -----------------------------------
+// >>> LoginForm.jsx
+---
+function LoginForm() {
+  const [email, setEmail] = useState("test@example.com");
+  const [password, setPassword] = useState("test4321");
+
+  const { loginFn, isLoggingIn } = useLogin();    // - importing "login-function" and isLoading as "isLoggingIn" from custom-hook [useLogin-fn]
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    if (!email || !password) return;
+
+    loginFn({ email, password });       // - instead of writing code that authenticates users, we include that in a separate file [useLogin-fn] 
+  }
+  return (
+    <Form onSubmit={handleSubmit}>
+      <FormRowVertical label="Email address">
+        <Input
+          type="email"
+          id="email"
+          // This makes this form better for password managers
+          autoComplete="username"
+          disabled={isLoggingIn}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+      </FormRowVertical>
+      <FormRowVertical label="Password">
+        <Input
+          type="password"
+          id="password"
+          autoComplete="current-password"
+          disabled={isLoggingIn}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+      </FormRowVertical>
+      <FormRowVertical>
+        <Button size="large" disabled={isLoggingIn}>
+          {isLoggingIn ? <SpinnerMini /> : "Login in"}
+        </Button>
+      </FormRowVertical>
+    </Form>
+  );
+}
+export default LoginForm;
+ * 
+ * - even when application is authenticated: other users can access every route of an application
+ * - so we need authorization... [in next lecture]!
+ * 
+ * ! 17. Authorization: Protecting Routes
+ * --------------------------------------
+ * * authorization
+ *    - where only logged in users can access every route of an application
+ *  
+ * >>> implementation
+ *    - wrap every part of application using protected route component 
+ * (we implemented this before inside [WORLD-WISE App] but that was not exactly what we do in real-world)
+ * 
+ * - real-world way of implementing authorization 
+ * [code]
+ * ------
+// >>> App.jsx
+---
+<Route element={<AppLayout />}>
+  <Route index element={<Navigate replace to="dashboard" />} />
+  <Route path="dashboard" element={<Dashboard />} />
+  <Route path="bookings" element={<Bookings />} />
+  <Route path="bookings/:bookingId" element={<Booking />} />
+  <Route path="checkin/:bookingId" element={<Checkin />} />
+  <Route path="cabins" element={<Cabins />} />
+  <Route path="users" element={<NewUsers />} />
+  <Route path="settings" element={<Settings />} />
+  <Route path="account" element={<Account />} />
+</Route>
+ * 
+ * - here every route is under <AppLayout> then protecting "AppLayout" protects every route under it as child
+ * [code]
+ * ------
+// >>> App.jsx
+---
+<Route
+  element={
+    <ProtectedRoute>    // - Parent element
+    <AppLayout />         // - direct children of "ProtectedRoute"
+    </ProtectedRoute>
+  }
+  >
+  <Route index element={<Navigate replace to="dashboard" />} />
+  <Route path="dashboard" element={<Dashboard />} />
+  <Route path="bookings" element={<Bookings />} />
+  <Route path="bookings/:bookingId" element={<Booking />} />          // - grandchildren of "protected-route"
+  <Route path="checkin/:bookingId" element={<Checkin />} />
+  <Route path="cabins" element={<Cabins />} />
+  <Route path="users" element={<NewUsers />} />
+  <Route path="settings" element={<Settings />} />
+  <Route path="account" element={<Account />} />
+<Route /> 
+----------------------------------------- connected -----------------------------------------
+// >>> ProtectedRoute.js
+---
+function ProtectedRoute({ children }) {
+  // 1. Load authenticated user
+  // 2. While loading.. show a spinner
+  // 3. if no authenticated-user, redirect user to "/login" page
+  // 4. if there is authenticated-user, render application
+
+  return children;
+}
+export default ProtectedRoute;
+ * 
+ * >>> steps involved in basic protection of routes or authorization..
+ * - 1. Load authenticated user
+ * - 2. While loading.. show a spinner
+ * - 3. if no authenticated-user, redirect user to "/login" page
+ * - 4. if there is authenticated-user, render application
  * 
  * 
  * 
- * ! 1. Checking Out a Booking (+ Fixing a Small Bug)
- * --------------------------------------------------
  * 
- * ! 1. Checking Out a Booking (+ Fixing a Small Bug)
- * --------------------------------------------------
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
  * 
  * ! 1. Checking Out a Booking (+ Fixing a Small Bug)
  * --------------------------------------------------
