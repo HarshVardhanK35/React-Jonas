@@ -1,5 +1,6 @@
 // ! Implementing More Features: "Authentication", "Dark-Mode", "Dashboard" etc.,
 // ------------------------------------------------------------------------------
+// ! PART - 1 !
 /**
  * * building this application as per the requirements listed inside 16-txt file!
  * * in this file >>> I will only paste the respective code snippet 
@@ -926,7 +927,7 @@ export function useLogin() {
       return loginApi({ email, password });
     },
     onSuccess: function () {
-      navigate("/dashboard");
+      navigate("/dashboard",  { replace: true });   //- replace set to true: "erase the earlier route that we were in!"
     },
     onError: function (err) {
       console.log("Login ERROR", err);
@@ -1053,220 +1054,431 @@ export default ProtectedRoute;
  * - 3. if no authenticated-user, redirect user to "/login" page
  * - 4. if there is authenticated-user, render application
  * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * ! 1. Checking Out a Booking (+ Fixing a Small Bug)
- * --------------------------------------------------
- * 
- * ! 1. Checking Out a Booking (+ Fixing a Small Bug)
- * --------------------------------------------------
- * 
- * ! 1. Checking Out a Booking (+ Fixing a Small Bug)
- * --------------------------------------------------
- * 
- * ! 1. Checking Out a Booking (+ Fixing a Small Bug)
- * --------------------------------------------------
- * 
- * ! 1. Checking Out a Booking (+ Fixing a Small Bug)
- * --------------------------------------------------
- * 
- * ! 1. Checking Out a Booking (+ Fixing a Small Bug)
- * --------------------------------------------------
- * 
- * ! 1. Checking Out a Booking (+ Fixing a Small Bug)
- * --------------------------------------------------
- * 
- * ! 1. Checking Out a Booking (+ Fixing a Small Bug)
- * --------------------------------------------------
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- *  
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
+ * - before 1st step.. we have to create a function that checks for active session inside local-storage [this has to be done inside "apiAuth.js"]
+ *    - if there is any then fetches user from supabase
+ * [code]
+ * ------
+// >>> apiAuth.js
+---
+export async function getLoggedUser() {       // - local-storage gets session of user.. when user logs in
+  const { data: sessionData } = await supabase.auth.getSession();           // - check if there is any active session inside "LOCAL-STORAGE"
+
+  if (!sessionData.session) return null;          // - checking of active-session, if "NO" returns a "null"
+  // - else.. 
+  const { data, error } = await supabase.auth.getUser();        // - re-download / fetch 'user' from 'supabase' [instead we can get from above-sessionData but that will not be a secure-way]
+  
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data?.user;
+}
+------------------------------------------------------- CONNECTED -------------------------------------------------------
+// ? react-query to manage state that was fetched from "getLoggedUser [from apiAuth.js]"
+// >>> useLoggedInUser.js:
+---
+function useLoggedInUser() {                    // - get user and download user-details and store into CACHE [instead of re-downloading when it is needed!]
+  const { data: user, isLoading } = useQuery({
+    queryKey: ["user"],                                             // - storing user-data inside cache with key "user"
+    queryFn: getLoggedUser,                   // >>> getting data using fn: "getLoggedUser" [important]
+  });
+  
+  return { user, isLoading, isAuthenticated: user?.role === "authenticated" };    // - checking "user.role" is authenticated or not! [type: "boolean"]
+}
+export default useLoggedInUser;
+------------------------------------------------------- CONNECTED -------------------------------------------------------
+// ? updating ProtectedRoute [finally]
+// >>> ProtectedRoute.jsx:
+---
+function ProtectedRoute({ children }) {       // - allowed to call inside callback or in a "useEffect" [but not at top level of component]
+  const navigate = useNavigate();
+  const { isLoading, isAuthenticated } = useLoggedInUser();           // - 1. Load authenticated user
+
+  useEffect(          // - 2. if no authenticated-user, redirect user to "/login" page
+    function () {
+      if (!isAuthenticated && !isLoading) navigate("/login"); // when "loading" user is also not 'authenticated'
+    },
+    [isAuthenticated, isLoading, navigate]
+  );
+  if (isLoading)
+    return (          // - 3. While loading.. show a spinner
+      <FullPage>
+        <Spinner />     
+      </FullPage>
+    );
+  if (isAuthenticated) return children;       // - 4. if there is authenticated-user, render application
+}
+export default ProtectedRoute;
+ * 
+ * - [next lecture]
+ * => logging out user
+ * 
+ * 
+ * ! 18. User Logout
+ * -----------------
+ * (logic written inside "apiAuth" and "useLogout" files)
+ * [code]
+ * ------
+// >>> apiAuth.js
+---
+export async function logout() {
+  const { error } = await supabase.auth.signOut();      // - [imp]
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+--------------------------------------------- CONNECTED ---------------------------------------------
+// >>> useLogout.js
+---
+function useLogout() {
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+
+  const { mutate: logoutFn, isLoading: isLoggingOut } = useMutation({
+    mutationFn: logoutApi,                       
+    onSuccess: function () {
+      queryClient.removeQueries();              // - removing cached queries.. user data and app data that was fetched while user is logged in have to removed from cache
+      navigate("/login", { replace: true });          // - replace set to be 'true' >>> "erase the earlier route that we were in!"
+    },
+  });
+  return { logoutFn, isLoggingOut };
+}
+export default useLogout;
+--------------------------------------------- CONNECTED ---------------------------------------------
+// >>> Logout.jsx
+---
+function Logout() {
+  const { logoutFn, isLoggingOut } = useLogout();
+  return (
+    <ButtonIcon disabled={isLoggingOut} onClick={logoutFn}>
+      {isLoggingOut ? <SpinnerMini /> : <HiArrowRightOnRectangle />}
+    </ButtonIcon>
+  );
+}
+export default Logout;
+ * 
+ * - without using "supabase" to add new users for our application 
+ *    - we create a sign-up form to create a user!
+ * 
+ * ! 19. Fixing an Important Bug
+ * -----------------------------
+ * * explanation of bug
+ * (we require 'apiAuth', 'useLogin', 'useLoggedInUser', 'ProtectedRoute' files to explain this)!
+ * [code]
+ * ------
+// >>> apiAuth.js
+---
+export async function getLoggedUser() {
+  const { data: sessionData } = await supabase.auth.getSession(); 
+  if (!sessionData.session) return null;              // #1
+
+  const { data, error } = await supabase.auth.getUser();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data?.user;
+}
+--------------------------------- CONNECTED --------------------------------- 
+// >>> useLogin.js
+---
+export function useLogin() {
+  const navigate = useNavigate();
+
+  const { mutate: loginFn, isLoading: isLoggingIn } = useMutation({
+    mutationFn: function ({ email, password }) {
+      return loginApi({ email, password });
+    },
+    onSuccess: function () {
+      navigate("/dashboard", { replace: true });      // #3
+    },
+    onError: function (err) {
+      console.log("Login ERROR", err);
+      toast.error("Provided login credentials are incorrect!");
+    },
+  });
+  return { loginFn, isLoggingIn };
+}
+--------------------------------- CONNECTED --------------------------------- 
+// >>> useLoggedInUser.js
+---
+function useLoggedInUser() {
+  const { data: user, isLoading } = useQuery({
+    queryKey: ["user"], 
+    queryFn: getLoggedUser,
+  });
+  return { user, isLoading, isAuthenticated: user?.role === "authenticated" };    // #2
+}
+export default useLoggedInUser;
+--------------------------------- CONNECTED --------------------------------- 
+// >>> ProtectedRoute.jsx:
+---
+function ProtectedRoute({ children }) {
+  const navigate = useNavigate();
+  const { isLoading, isAuthenticated } = useLoggedInUser();
+  
+  useEffect(
+    function () {
+      if (!isAuthenticated && !isLoading) navigate("/login");     // #4
+    },
+    [isAuthenticated, isLoading, navigate]
+  );
+  if (isLoading){
+    return (
+      <FullPage>
+        <Spinner />
+      </FullPage>
+    );
+  }
+  if (isAuthenticated) return children;
+}
+export default ProtectedRoute;
+ * 
+ * 
+ * #1
+ *    - whenever user tries to access "/dashboard" without logging in.. application automatically asks user to login into his account [by redirecting user to "/login" page]
+ *    - as there is no user's session inside "LOCAL-STORAGE"
+ *        - as per mark "#1" {if (!sessionData.session) return null} >>> react-query sets query-cache of "user" to "null" [that is user is false now!]
+const { data: user, isLoading } = useQuery({
+  queryKey: ["user"], 
+  queryFn: getLoggedUser,
+});
+ * 
+ * - as per above code.. to "queryKey: ["user"]" inside cache: user-key gets null
+ * 
+ * [now user attempts to log in to his account]
+ * #2 
+ *    - as inside query-cache user is set to "null" 
+ *    - even though user was logged in.. that means user gets a session-data [that is an access_token inside local-storage]
+ *    - user will not be redirected to "/dashboard" but he stays inside "/login" page itself
+ * [cause as user gets "null" previously that is user: false before]
+ * [code]
+ * ------
+return { user, isLoading, isAuthenticated: user?.role === "authenticated" };    //#2
+navigate("/dashboard", { replace: true });    // #3
+if (!isAuthenticated && !isLoading) navigate("/login");   // #4
+ * 
+ * (as per above #2, #3, #4)
+ *    - user.role is checked with "authenticated" but initially user is set to "false"
+ *    - so unequal and even user successfully logged-in >>> user stays inside "/login" [will not be redirected to "/dashboard"] 
+ * 
+ * [code]
+ * ------
+// >>> useLogin.js
+---
+export function useLogin() {
+  const navigate = useNavigate();
+
+  const { mutate: loginFn, isLoading: isLoggingIn } = useMutation({
+    mutationFn: function ({ email, password }) {
+      return loginApi({ email, password });
+    },
+    onSuccess: function (user) {
+      console.log(user);              // - consoles the below output!
+      navigate("/dashboard", { replace: true });
+    },
+    onError: function (err) {
+      console.log("Login ERROR", err);
+      toast.error("Provided login credentials are incorrect!");
+    },
+  });
+  return { loginFn, isLoggingIn };
+}
+----------------------------------- ! OUTPUT ! / CONSOLE.LOG -----------------------------------
+{session: {...}, user: {...}} ----+ 
+.                                ⬇️
+.                                ⬇️
+1. session: {access_token: 'eyJhbGciOiJIUzI1NiIsImtpZCI6ImUyS21IU1BzVVdxaXQ0cl…HNlfQ.iYRn2eyVj5Kpq7deAzZnHszVOY03184Xz72dlTCUUAI', token_type: 'bearer', expires_in: 3600, expires_at: 1752219811, refresh_token: 'l7rxlov6lxh6', …}
+
+2. user: {id: '79ac1759-7f1d-41ef-83de-17fe868a69c5', aud: 'authenticated', role: 'authenticated', email: 'test@example.com', email_confirmed_at: '2025-07-10T14:07:23.692883Z', …}
+[[Prototype]]: Object
+ * 
+ * 
+ * >>> solution:
+ * - setQueryData["queryKey / user", "to: user-data"]
+ * [code]
+ * ------
+export function useLogin() {
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+
+  const { mutate: loginFn, isLoading: isLoggingIn } = useMutation({
+    mutationFn: function ({ email, password }) {
+      return loginApi({ email, password });
+    },
+    onSuccess: function (user) {          // - {session: {...}, user: {...}}
+      queryClient.setQueryData(["user"], user.user);          // - set react-query: "user" to [user.user]
+      navigate("/dashboard", { replace: true });
+    },
+    onError: function (err) {
+      console.log("Login ERROR", err);
+      toast.error("Provided login credentials are incorrect!");
+    },
+  });
+  return { loginFn, isLoggingIn };
+}
+ * 
+ * - by this way initially set null inside "user" will again replaced with [user.user]
+ * 
+ * 
+ * ! 20. Building the Sign Up Form
+ * -------------------------------
+ * - not everyone can create an account in this app
+ *    - only employees of hotel are the users of this application
+ * 
+ * - these users can only be created inside application >>> new users are immediately verified by existing hotel staff!
+ * [and only existing hotel-staff can create new users]
+ * 
+ * - but inside other application.. we can have a new signup page of new users
+ *    - new users are created inside application with in "/users" route 
+ * [code]
+ * ------
+// >>> User.jsx
+---
+function NewUsers() {
+  return (
+    <>
+      <Heading as="h1">Create a new user</Heading>
+      <SignupForm />            
+    </>           \
+  );          // - below "SignupForm" will be rendered here!
+}
+export default NewUsers;
+------------------------------- CONNECTED -------------------------------
+// >>> SignupForm
+---
+
+function SignupForm() {
+  const { register, formState, getValues, handleSubmit } = useForm(); 
+  const { errors } = formState;
+  function onHandleSubmit(data) {
+    console.log(data);
+  }
+  return (
+    <Form onSubmit={handleSubmit(onHandleSubmit)}>
+      <FormRow label="Full name" error={errors?.fullName?.message}>     // - if any errors ? error.<id>.message will be displayed along with the field!
+        <Input
+          type="text"
+          id="fullName"
+          {...register("fullName", {                        // - calling "register" fn creates new props and we spread them into every field!
+            required: "This field is required",
+          })}                               \
+        />                            // - error message
+      </FormRow>
+
+      <FormRow label="Email address" error={errors?.email?.message}>
+        <Input
+          type="email"
+          id="email"
+          {...register("email", {
+            required: "This field is required",
+            pattern: {
+              value: /\S+@\S+\.\S+/,          // - checking email format / pattern with "REGEX"
+              message: "Please provide a valid email address",
+            },
+          })}
+        />
+      </FormRow>
+
+      <FormRow
+        label="Password (min 8 characters)"
+        error={errors?.password?.message}
+      >
+        <Input
+          type="password"
+          id="password"
+          {...register("password", {
+            required: "This field is required",
+            minLength: {                              // - register fn with options: "minLength"
+              value: 8,                   
+              message: "Password needs to be minimum 8 characters in length",
+            },
+          })}
+        />
+      </FormRow>
+
+      <FormRow label="Repeat password" error={errors?.passwordConfirm?.message}>
+        <Input
+          type="password"
+          id="passwordConfirm"
+          {...register("passwordConfirm", {
+            required: "This field is required",
+            validate: function (value) {
+              return (
+                value === getValues().password || "Passwords need to match"     // - getValues fn will get values from other fields into a field where getValues() is invoked!
+              );                                    \
+            },        // - if password from other does not match >>> this "message" will be rendered
+          })}
+        />
+      </FormRow>
+      <FormRow>
+        <Button variation="secondary" type="reset">
+          Cancel
+        </Button>
+        <Button>Create new user</Button>
+      </FormRow>
+    </Form>
+  );
+}
+export default SignupForm;
+ * 
+ * - for this we handle errors using "React-Hook-Form" library 
+ * 
+ * 
+ * ! 21. User Sign Up [logic]
+ * --------------------------
+ * [code]
+ * ------
+// >>> apiAuth.js
+---
+export async function signup({ fullName, email, password }) {
+  const { data, error } = await supabase.auth.signUp({
+    email: email,
+    password: password,
+    options: {
+      data: {
+        fullName: fullName,
+        avatar: "",
+      },
+    },
+  });
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data;
+}
+--------------------------------------- CONNECTED ---------------------------------------
+// >>> useSignup [custom-hook]
+---
+export function useSignup() {
+  const { mutate: signupFn, isLoading: isSigningUp } = useMutation({
+    mutationFn: signupApi,
+    onSuccess: function (user) {
+      // receive data of newly created user
+      toast.success(
+        "Account successfully created! Please verify user's email address"
+      );
+    },
+  });
+
+  return { signupFn, isSigningUp };
+}
+--------------------------------------- CONNECTED ---------------------------------------
+ * 
+ * - changing row level security policies to only allow access for pages to users that are authenticated!
+ * [as application routes has been protected but not the resources in it]!
+ * 
+ * 
+ * ! 21. Authorization on Supabase: Protecting Database (RLS)
+ * ----------------------------------------------------------
+ * - as every one can fetch and mutate data from API even if they are not logged into Application
+ * [fix that: implementing authorization also on supabase by updating row level security policies on every row]!
+ * 
+ * - fix that inside supabase-web-app => inside "Authentication" => click on "Policies" 
+ *    - and update RLS for every resource => click on "edit policy" => change "TARGET-ROLES" to "Authenticated" 
+ * [change this for every resource: (bookings, cabins, guests, setting)]
+ * 
+ * ! AUTHENTICATION & AUTHORIZATION has been completed!
+ * 
+ * ! CONTINUES IN... (part-2) !
  * 
  */

@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import useLoggedInUser from "../features/authentication/useLoggedInUser";
+import useLoggedInUser from "../features/Authentication/useLoggedInUser";
 import Spinner from "./Spinner";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";

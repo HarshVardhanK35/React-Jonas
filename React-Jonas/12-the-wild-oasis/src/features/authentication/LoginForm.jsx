@@ -17,7 +17,15 @@ function LoginForm() {
     e.preventDefault();
     if (!email || !password) return;
 
-    loginFn({ email, password });
+    loginFn(
+      { email, password },
+      {
+        onSettled: function () {
+          setEmail("");
+          setPassword("");
+        },
+      }
+    );
   }
 
   return (
