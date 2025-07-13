@@ -564,7 +564,7 @@ function useRecentStays() {
 }
 export default useRecentStays;
 ---------------------------------------- CONNECTED ----------------------------------------
-// >>> [1+2] 
+// >>> [1+2] DashboardLayout
 ---
 function DashboardLayout() {
   const { bookings, isLoading: isBookingsLoading } = useRecentBookings();
@@ -588,152 +588,800 @@ function DashboardLayout() {
  * 
  * ! 27. Displaying Statistics
  * ---------------------------
- * 
- * 
- * 
- * ! 21. Authorization on Supabase: Protecting Database (RLS)
- * ----------------------------------------------------------
- * 
- * ! 21. Authorization on Supabase: Protecting Database (RLS)
- * ----------------------------------------------------------
- * 
- * ! 21. Authorization on Supabase: Protecting Database (RLS)
- * ----------------------------------------------------------
- * 
- * ! 21. Authorization on Supabase: Protecting Database (RLS)
- * ----------------------------------------------------------
- * 
- * ! 21. Authorization on Supabase: Protecting Database (RLS)
- * ----------------------------------------------------------
- * 
- * ! 21. Authorization on Supabase: Protecting Database (RLS)
- * ----------------------------------------------------------
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
+ * updated DashboardLayout.jsx file
+ * [code]
+ * ------
+// >>> DashboardLayout
+---
+function DashboardLayout() {
+  const { bookings, isLoading: isBookingsLoading } = useRecentBookings();
+  const {
+    stays,
+    confirmedStays,
+    isLoading: isStaysLoading,
+    numDays,
+  } = useRecentStays();
+
+  // to get total number of cabins
+  const { cabins, isLoading: isCabinsLoading } = useFetchCabins();
+
+  if (isBookingsLoading || isStaysLoading || isCabinsLoading)
+    return <Spinner />;
+
+  return (
+    <StyledDashboardLayout>
+      <Stats
+        bookings={bookings}
+        confirmedStays={confirmedStays}
+        numCabins={cabins.length}
+        numDays={numDays}
+      />
+      <div>{"Today's activity"}</div>
+      <div>Chat stay durations</div>
+      <div>Chart sales</div>
+    </StyledDashboardLayout>
+  );
+}
+----------------------------------------- CONNECTED -----------------------------------------
+// >>> Stats
+---
+function Stats({ bookings, confirmedStays, numDays, numCabins }) {
+  const numBookings = bookings.length;        // - 1. calculate total number of "bookings"
+
+  const sales = bookings.reduce((acc, cur) => {       // - 2. calc total number of "sales"
+    return acc + cur.totalPrice;
+  }, 0);
+
+  const checkIns = confirmedStays.length;     // - 3. calc total num of "check-in"
+
+  // - 4. calc: "occupancy-rate" = num of checked-in nights (num of nights guests stayed)! / available nights (num of days * num of cabins)
+  const numCheckedInNights = confirmedStays.reduce((acc, cur) => {
+    return acc + cur.numNights;
+  }, 0);
+  const availableNights = numDays * numCabins;
+  const occupancyRate = numCheckedInNights / availableNights;
+
+  return (
+    <>
+      <Stat
+        title="Bookings"
+        color="blue"
+        icon={<HiOutlineBriefcase />}
+        value={numBookings}
+      />
+      <Stat
+        title="Sales"
+        color="green"
+        icon={<HiOutlineBanknotes />}
+        value={formatCurrency(sales)}
+      />
+      <Stat
+        title="Check ins"
+        color="indigo"
+        icon={<HiOutlineCalendarDays />}
+        value={checkIns}
+      />
+      <Stat
+        title="Occupancy rate"
+        color="yellow"
+        icon={<HiOutlineChartBar />}
+        value={Math.round(occupancyRate * 100) + "%"}
+      />
+    </>
+  );
+}
+----------------------------------------- CONNECTED -----------------------------------------
+// >>> Stat.jsx
+---
+function Stat({ icon, title, value, color }) {
+  return (
+    <StyledStat>
+      <Icon color={color}>{icon}</Icon>
+      <Title>{title}</Title>
+      <Value>{value}</Value>
+    </StyledStat>
+  );
+}
+ * 
+ * 
+ * 
+ * ! 28. Displaying a Line Chart With the Recharts Library
+ * -------------------------------------------------------
+ * popular, easiest and most-used react charts: "RECHARTS"
+ * => npm i recharts@2
+ * 
+ * [code]
+ * ------
+// >>> SalesChart.jsx:
+---
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { useDarkMode } from "../../context/DarkModeContext";
+import { eachDayOfInterval, format, isSameDay, subDays } from "date-fns";
+
+function SalesChart({ bookings, numDays }) {
+  const { isDark } = useDarkMode();
+
+  const allDates = eachDayOfInterval({
+    start: subDays(new Date(), numDays - 1),
+    end: new Date(),
+  });
+  const data = allDates.map((date) => {
+    return {
+      label: format(date, "MMM dd"),
+      totalSales: bookings
+        .filter((booking) => {
+          return isSameDay(date, new Date(booking.created_at));
+        })
+        .reduce((acc, cur) => {
+          return acc + cur.totalPrice;
+        }, 0),
+
+      extrasSales: bookings
+        .filter((booking) => {
+          return isSameDay(date, new Date(booking.created_at));
+        })
+        .reduce((acc, cur) => {
+          return acc + cur.extrasPrice;
+        }, 0),
+    };
+  });
+  const colors = isDark
+    ? {
+        totalSales: { stroke: "#4f46e5", fill: "#4f46e5" },
+        extrasSales: { stroke: "#22c55e", fill: "#22c55e" },
+        text: "#e5e7eb",
+        background: "#18212f",
+      }
+    : {
+        totalSales: { stroke: "#4f46e5", fill: "#c7d2fe" },
+        extrasSales: { stroke: "#16a34a", fill: "#dcfce7" },
+        text: "#374151",
+        background: "#fff",
+      };
+  return (
+    <StyledSalesChart>
+      <Heading as="h2">
+        Sales from {format(allDates.at(0), "dd MMM yyyy")} &mdash;{" "}
+        {format(allDates.at(-1), "dd MMM yyyy")}
+      </Heading>
+      <ResponsiveContainer height={300} width="100%">
+        <AreaChart data={data}>
+          <XAxis
+            dataKey="label"
+            tick={{ fill: colors.text }}
+            tickLine={{ stroke: colors.text }}
+          />
+          <YAxis
+            unit="$"
+            tick={{ fill: colors.text }}
+            tickLine={{ stroke: colors.text }}
+          />
+          <CartesianGrid strokeDasharray="4" />
+          <Tooltip contentStyle={{ backgroundColor: colors.background }} />
+          <Area
+            dataKey="totalSales"
+            type="monotone"
+            stroke={colors.totalSales.stroke}
+            fill={colors.totalSales.fill}
+            strokeWidth={2}
+            name="Total sales"
+            unit="$"
+          />
+          <Area
+            dataKey="extrasSales"
+            type="monotone"
+            stroke={colors.extrasSales.stroke}
+            fill={colors.extrasSales.fill}
+            strokeWidth={2}
+            name="Extras sales"
+            unit="$"
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </StyledSalesChart>
+  );
+}
+------------------------------------------------------ CONNECTED ------------------------------------------------------
+// >>> DashboardLayout.jsx
+---
+function DashboardLayout() {
+  const { bookings, isLoading: isBookingsLoading } = useRecentBookings();
+  const {
+    stays,
+    confirmedStays,
+    isLoading: isStaysLoading,
+    numDays,
+  } = useRecentStays();
+
+  const { cabins, isLoading: isCabinsLoading } = useFetchCabins();
+
+  if (isBookingsLoading || isStaysLoading || isCabinsLoading)
+    return <Spinner />;
+
+  return (
+    <StyledDashboardLayout>
+      <Stats ... />
+      <div>{"Today's activity"}</div>
+      <div>Chat stay durations</div>
+      <SalesChart bookings={bookings} numDays={numDays} />    // - included "SalesChart" here
+    </StyledDashboardLayout>
+  );
+}
+ * 
+ * 
+ * ! 29. Displaying a Pie Chart
+ * ----------------------------
+ * [code]
+ * ------
+// >>> DurationChart.jsx
+---
+const startDataLight = [
+  {
+    duration: "1 night",
+    value: 0,
+    color: "#ef4444",
+  },
+  {
+    duration: "2 nights",
+    value: 0,
+    color: "#f97316",
+  },
+  {
+    duration: "3 nights",
+    value: 0,
+    color: "#eab308",
+  },
+  {
+    duration: "4-5 nights",
+    value: 0,
+    color: "#84cc16",
+  },
+  {
+    duration: "6-7 nights",
+    value: 0,
+    color: "#22c55e",
+  },
+  {
+    duration: "8-14 nights",
+    value: 0,
+    color: "#14b8a6",
+  },
+  {
+    duration: "15-21 nights",
+    value: 0,
+    color: "#3b82f6",
+  },
+  {
+    duration: "21+ nights",
+    value: 0,
+    color: "#a855f7",
+  },
+];
+--------------------------------------------------------------------
+const startDataDark = [
+  {
+    duration: "1 night",
+    value: 0,
+    color: "#b91c1c",
+  },
+  {
+    duration: "2 nights",
+    value: 0,
+    color: "#c2410c",
+  },
+  {
+    duration: "3 nights",
+    value: 0,
+    color: "#a16207",
+  },
+  {
+    duration: "4-5 nights",
+    value: 0,
+    color: "#4d7c0f",
+  },
+  {
+    duration: "6-7 nights",
+    value: 0,
+    color: "#15803d",
+  },
+  {
+    duration: "8-14 nights",
+    value: 0,
+    color: "#0f766e",
+  },
+  {
+    duration: "15-21 nights",
+    value: 0,
+    color: "#1d4ed8",
+  },
+  {
+    duration: "21+ nights",
+    value: 0,
+    color: "#7e22ce",
+  },
+];
+--------------------------------------------------------------------
+function prepareData(startData, stays) {
+  // - A bit ugly code, but sometimes this is what it takes when working with real data 😅
+  function incArrayValue(arr, field) {
+    return arr.map((obj) =>
+      obj.duration === field ? { ...obj, value: obj.value + 1 } : obj
+    );
+  }
+  const data = stays
+    .reduce((arr, cur) => {
+      const num = cur.numNights;
+      if (num === 1) return incArrayValue(arr, "1 night");
+      if (num === 2) return incArrayValue(arr, "2 nights");
+      if (num === 3) return incArrayValue(arr, "3 nights");
+      if ([4, 5].includes(num)) return incArrayValue(arr, "4-5 nights");
+      if ([6, 7].includes(num)) return incArrayValue(arr, "6-7 nights");
+      if (num >= 8 && num <= 14) return incArrayValue(arr, "8-14 nights");
+      if (num >= 15 && num <= 21) return incArrayValue(arr, "15-21 nights");
+      if (num >= 21) return incArrayValue(arr, "21+ nights");
+      return arr;
+    }, startData)
+    .filter((obj) => obj.value > 0);
+
+  return data;
+}
+--------------------------------------------------------------------
+function DurationChart({ confirmedStays }) {
+  const { isDark } = useDarkMode();
+
+  const startData = isDark ? startDataDark : startDataLight;
+  const data = prepareData(startData, confirmedStays);
+
+  return (
+    <ChartBox>
+      <Heading as="h2">Stays duration summary</Heading>
+      <ResponsiveContainer weight="100%" height={240}>
+        <PieChart>
+          <Pie
+            data={data}
+            nameKey="duration"
+            dataKey="value"
+            innerRadius={80}
+            outerRadius={115}
+            paddingAngle={4}
+            cx="40%"
+            cy="50%"
+          >
+            {data.map((entry) => (
+              <Cell
+                fill={entry.color}
+                stroke={entry.color}
+                key={entry.duration}
+              />
+            ))}
+          </Pie>
+          <Tooltip />
+          <Legend
+            verticalAlign="middle"
+            align="right"
+            width="30%"
+            layout="vertical"
+            iconSize={14}
+            iconType="circle"
+          />
+        </PieChart>
+      </ResponsiveContainer>
+    </ChartBox>
+  );
+}
+------------------------ CONNECTED ------------------------
+// >>> DashboardLayout.jsx
+---
+return (
+  <StyledDashboardLayout>
+    <Stats
+      bookings={bookings}
+      confirmedStays={confirmedStays}
+      numCabins={cabins.length}
+      numDays={numDays}
+    />
+    <div>{"Today's activity"}</div>
+    <DurationChart confirmedStays={confirmedStays} />
+    <SalesChart bookings={bookings} numDays={numDays} />
+  </StyledDashboardLayout>
+);
+ * 
+ * 
+ * 
+ * ! 30. Displaying Stays for Current Day
+ * --------------------------------------
+ * [code]
+ * ------
+// >>> apiBookings.js
+---
+// - Activity means that there is a check-in (OR) check-out today
+export async function getStaysTodayActivity() {
+  const { data, error } = await supabase
+    .from("bookings")
+    .select("*, guests(fullName, nationality, countryFlag)")
+    .or(
+      `and(status.eq.unconfirmed,startDate.eq.${getToday()}),and(status.eq.checked-in,endDate.eq.${getToday()})`
+    )
+    .order("created_at");
+
+  // CONDITIONS
+  // ? (stay.status === 'unconfirmed' && isToday(new Date(stay.startDate))) ||
+  // ? (stay.status === 'checked-in' && isToday(new Date(stay.endDate)))
+    
+  // - Equivalent to this. But by querying this, we only download the data we actually need, otherwise we would need ALL bookings ever created
+  // - if we want to apply above conditions to "bookings" data.. then we need to download data that is related to "bookings"
+  // - so, instead we used "supabase" queries.. so that we get data with applied conditionals
+
+  if (error) {
+    console.error(error);
+    throw new Error("Bookings could not get loaded");
+  }
+  return data;
+}
+ * 
+ * - this data has to be queried again and has to be stored inside "cache" using react-query
+ * [react-query]  
+ * -------------
+// >>> useTodayActivity.js:
+---
+function useTodayActivity() {
+  const { data: todayStays, isLoading: isLoadingTodayActivity } = useQuery({
+    queryKey: ["today-activity"],
+    queryFn: getStaysTodayActivity,
+  });
+
+  return { todayStays, isLoadingTodayActivity };
+}
+ * 
+ * - using data to render content 
+ * [JSX-CODE]
+ * ----------
+// >>> TodayActivity.jsx
+---
+
+function TodayActivity() {
+  const { activitiesToday, isLoadingTodayActivity } = useTodayActivity();
+
+  return (
+    <StyledToday>
+      <Row type="horizontal">
+        <Heading as="h2">Today</Heading>
+      </Row>
+      {!isLoadingTodayActivity ? (
+        activitiesToday?.length > 0 ? (
+          <ActivityList>
+            {activitiesToday.map((activity) => (
+              <TodayItem key={activity.id} activity={activity} />   // - sending data as props into "TodayItem" component
+            ))}
+          </ActivityList>
+        ) : (
+          <NoActivity>No activity for today!</NoActivity>
+        )
+      ) : (
+        <Spinner />
+      )}
+    </StyledToday>
+  );
+}
+------------------------------- CONNECTED -------------------------------
+// >>> TodayItem.jsx
+---
+function TodayItem({ activity }) {
+  const { id, status, guests, numNights } = activity;
+
+  return (
+    <StyledTodayItem>
+      {status === "unconfirmed" ? <Tag type="green">Arriving</Tag> : ""}
+      {status === "checked-in" ? <Tag type="blue">Departing</Tag> : ""}
+      <Flag src={guests.countryFlag} alt={`Flag of ${guests.country}`} />
+      <Guest>{guests.fullName}</Guest>
+      <div>{numNights} nights</div>
+
+      {status === "unconfirmed" && (
+        <Button
+          size="small"
+          variation="primary" 
+          as={Link}               // #1
+          to={`/checkin/${id}`}
+        >
+          Check in
+        </Button>
+      )}
+      {status === "checked-in" ? <CheckoutButton bookingId={id} /> : ""}
+    </StyledTodayItem>
+  );
+}
+------------------------------- CONNECTED -------------------------------
+// >>> CheckoutButton.jsx
+---
+function CheckoutButton({ bookingId }) {
+  const { checkout, isCheckingOut } = useCheckout();
+
+  return (
+    <Button
+      size="small"
+      variation="primary"
+      disabled={isCheckingOut}
+      onClick={() => checkout(bookingId)}
+    >
+      Check out
+    </Button>
+  );
+}
+ * 
+ * [explanation]
+ * #1
+ * - used "as" inside a button component 
+ *    - "as" replaces actual HTML element >>> with passed HTML element into it 
+ *    - that is why we defined "to" to specify link which takes user to that link
+ * 
+ * 
+ * ! 31. Error Boundaries
+ * ----------------------
+ * (how to handle errors that might occur during react rendering)
+ * * Error Boundaries
+ *    - these are try-catch blocks but for react-rendering
+ * (hard to use in react: they're still implemented using class components)
+ * 
+ * >>> so, use package called "react error boundary"
+ * => npm i react-error-boundary
+ * 
+ * - this package provides us with error-boundary-component 
+ * [where we can pass in a fallback and also a function to reset the application (that is whenever an error has been occurred)] 
+ * 
+ * [error]
+ * -------
+// >>> inside BookingTable.jsx
+---
+function BookingTable() {
+  const { bookings, isLoading, count } = useFetchBookings();
+  if (isLoading) return <Spinner />;
+  if (bookings?.length === 0) return <Empty resourceName="Bookings" />;
+  
+  return ( ... )
+}
+ * 
+ * >>> steps:
+ * - wrap <App /> inside "main.jsx" into "ErrorBoundary" from the package that we just installed!
+ *    - it takes a property "FallbackComponent" >>> this takes a component not an element 
+ * [code]
+ * ------
+// >>> inside main.jsx
+---
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
+    <ErrorBoundary FallbackComponent={ErrorFallback} onError={() => window.location.replace("/")}>
+      <App />
+    </ErrorBoundary>
+  </React.StrictMode>
+);
+--------------------------------- CONNECTED ---------------------------------
+// >>> ErrorFallback.jsx (created a component)
+---
+function ErrorFallback({ error, resetErrorBoundary }) {           // - this component will render when an error occurred!
+  return (
+    <>
+      <GlobalStyles />
+      <StyledErrorFallback>
+        <Box>
+          <Heading as="h1">Something went wrong!</Heading>
+          <p>{error?.message}</p>
+          <Button size="large" onClick={resetErrorBoundary}>Try again</Button>
+        </Box>
+      </StyledErrorFallback>
+    </>
+  );
+}
+ * 
+ * $ SUMMARY
+ * - these error boundaries only catch errors while react is rendering 
+ * - and errors occurred inside event handlers, in an effect and in asynchronous code are not caught by this error boundary
+ * 
+ * ! 32. Final Touches + Fixing Bugs
+ * ---------------------------------
+ * #1 an error inside "Menus.jsx"
+ *    - for every menu on every row whenever we click on that vertical-three dots 
+ * [it opens on first-click and has to close again on clicking that same 3-dots again >>> but it is not happening!]
+ *    - after opened, and again clicking on same button recognize that as "Outside-Click" 
+ *    [but it recognize outside click and then in milliseconds it will be clicked automatically]
+ * [CAUSE]
+ *    - event BUBBLING and CAPTURING phases and stop the event propagation also
+ *    [set it to false, it will be true (if we haven't specified!)]
+ * 
+ * * e.stopPropagation
+ *    - using this event will never travel up inside DOM
+ * 
+ * [code]
+ * ------
+// >>> Menus.jsx
+---
+const MenusContext = createContext();
+function Menus({ children }) {
+  const [openId, setOpenId] = useState("");
+  const [position, setPosition] = useState(null);
+
+  function close() {
+    setOpenId("");
+  }
+  const open = setOpenId;
+  
+  return (
+    <MenusContext.Provider
+      value={{ openId, open, close, position, setPosition }}
+    >
+      {children}
+    </MenusContext.Provider>
+  );
+}
+
+function Toggle({ id }) {
+  const { openId, open, close, setPosition } = useContext(MenusContext);
+
+  function handleClick(e) {
+    e.stopPropagation()                                                       // - [ADDITIONALLY] stop default event-propagation here
+
+    const rect = e.target.closest("button").getBoundingClientRect();
+    setPosition({
+      x: window.innerWidth - rect.width - rect.x,
+      y: rect.y + rect.height + 8,
+    });
+    openId === "" || openId !== id ? open(id) : close();
+  }
+  return (
+    <StyledToggle onClick={handleClick}>
+      <HiEllipsisVertical />
+    </StyledToggle>
+  );
+}
+function List({ id, children }) {
+  const { openId, position, close } = useContext(MenusContext);
+
+  const { ref } = useOutsideClick(close, false);      // - specify 'false' here [CONNECTION-BELOW: useOutsideClick]
+
+  if (openId === id) {
+    return createPortal(
+      <StyledList position={position} ref={ref}>
+        {children}
+      </StyledList>,
+      document.body
+    );
+  }
+}
+function Button({ children, icon, onClick }) {
+  const { close } = useContext(MenusContext);
+
+  function handleClick() {
+    onClick?.();
+    close();
+  }
+  return (
+    <li>
+      <StyledButton onClick={handleClick}>
+        {icon}
+        <span>{children}</span>
+      </StyledButton>
+    </li>
+  );
+}
+Menus.Menu = Menu;
+Menus.Toggle = Toggle;
+Menus.List = List;
+Menus.Button = Button;
+---------------------------------------- CONNECTED ----------------------------------------
+// >>> useOutsideClick
+---
+function useOutsideClick(closeHandler, listenCapturing = true) {
+  const ref = useRef();
+  useEffect(
+    function () {
+      function handleClick(e) {
+        if (ref.current && !ref.current.contains(e.target)) {
+          closeHandler();
+        }
+      }                                               // - this lies here to remove immediately
+      document.addEventListener("click", handleClick, listenCapturing);                           // - event capturing phase
+                                                                      
+      return function () {
+        document.removeEventListener("click", handleClick, listenCapturing);
+      };                                                                    // - when comp "un-mounts" remove "handleClick" function
+    },
+    [closeHandler, listenCapturing]
+  );
+  return { ref };
+}
+ *    
+ * 
+ * #2 ERROR fixing
+ *    - when user wants to fetch booking with booking-id that was not inside DB
+ *      - booking-id that does not exist
+ * (this error may get caught with error boundary but we have to render a message that "booking could not be found!")
+ * [code]
+ * ------
+// >>> BookingDetail
+---
+function BookingDetail() {
+  const navigate = useNavigate();
+  const { booking, isLoading } = useFetchBooking();
+  const { checkout, isCheckingOut } = useCheckout();
+  const { deleteBooking, isDeleting } = useDeleteBooking();
+  const moveBack = useMoveBack();
+
+  if (isLoading) return <Spinner />;
+  if (!booking) return <Empty resourceName={booking} />;
+
+  const { status, id: bookingId } = booking;
+
+  const statusToTagName = {
+    unconfirmed: "blue",
+    "checked-in": "green",
+    "checked-out": "silver",
+  };
+
+  return ( 
+    --- CHECK ON GITHUB ---
+  )
+}
+-------------------- CONNECTED --------------------
+// >>> Empty
+---
+function Empty({ resourceName }) {
+  return <p>No {resourceName} could be found.</p>;
+}
+export default Empty;
+ * 
+ * #3 FEATURE
+ *    - using default value for "isDark" value from user-defined setting inside user's operating system
+ * that is done using...
+ *  - media query: window.matchMedia('(prefers-color-scheme: dark)').matches
+ *    - with this whenever users open application it will be in "dark-mode"
+ * [code]
+ * ------
+// >>> 
+---
+function DarkModeProvider({ children }) {
+  const [isDark, setIsDark] = useLocalStorageState(
+    window.matchMedia("(prefers-color-scheme: dark)").matches,    // - user's OPERATING SYSTEM's setting
+    "isDark"
+  ); 
+  useEffect(
+    function () {
+      if (isDark) {
+        document.documentElement.classList.add("dark-mode");
+        document.documentElement.classList.remove("light-mode");
+      } else {
+        document.documentElement.classList.remove("dark-mode");
+        document.documentElement.classList.add("light-mode");
+      }
+    },
+    [isDark]
+  );
+  function toggleDarkLight() {
+    setIsDark((isDark) => !isDark);
+  }
+  return (
+    <DarkModeContext.Provider value={{ isDark, toggleDarkLight }}>
+      {children}
+    </DarkModeContext.Provider>
+  );
+}
+function useDarkMode() {
+  const context = useContext(DarkModeContext);
+  if (context === undefined) {
+    throw new Error(
+      "Dark-Mode-Context was used outside of Dark-Mode-Provider!"
+    );
+  }
+  return context;
+}
+export { DarkModeProvider, useDarkMode };
  * 
  * 
  * 

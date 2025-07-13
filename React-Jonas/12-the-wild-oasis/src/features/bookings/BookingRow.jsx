@@ -130,13 +130,10 @@ function BookingRow({ booking }) {
             )}
 
             <Modal.Open opens="delete">
-              {status === "checked-out" && (
-                <Menus.Button icon={<HiTrash />}>Delete Booking</Menus.Button>
-              )}
+              <Menus.Button icon={<HiTrash />}>Delete Booking</Menus.Button>
             </Modal.Open>
           </Menus.List>
         </Menus.Menu>
-
         <Modal.Window name="delete">
           <ConfirmDelete
             resourceName="booking"

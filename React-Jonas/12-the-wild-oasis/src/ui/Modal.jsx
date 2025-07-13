@@ -57,7 +57,7 @@ const Button = styled.button`
 const ModalContext = createContext();
 
 // 2. create a parent-component
-function Modal({ children }) {
+function  Modal({ children }) {
   const [openName, setOpenName] = useState(""); // start with no empty window
 
   // handler functions
@@ -88,7 +88,7 @@ function Window({ children, name }) {
 
   const { ref } = useOutsideClick(close);
 
-  if (name == openName) {
+  if (name === openName) {
     return createPortal(
       <Overlay>
         <StyledModal ref={ref}>

@@ -19,6 +19,7 @@ import styled from "styled-components";
 import Modal from "../../ui/Modal";
 import ConfirmDelete from "../../ui/ConfirmDelete";
 import useDeleteBooking from "./useDeleteBooking";
+import Empty from "../../ui/Empty";
 
 const HeadingGroup = styled.div`
   display: flex;
@@ -34,6 +35,7 @@ function BookingDetail() {
   const moveBack = useMoveBack();
 
   if (isLoading) return <Spinner />;
+  if (!booking) return <Empty resourceName={booking} />;
 
   const { status, id: bookingId } = booking;
 
@@ -75,11 +77,13 @@ function BookingDetail() {
             <ConfirmDelete
               resourceName="booking"
               disabled={isDeleting}
-              onConfirm={() => deleteBooking(bookingId, {
-                onSettled: function () {
-                  navigate(-1)
-                }
-              })}
+              onConfirm={() =>
+                deleteBooking(bookingId, {
+                  onSettled: function () {
+                    navigate(-1);
+                  },
+                })
+              }
             />
           </Modal.Window>
         </Modal>

@@ -17,7 +17,6 @@ function useOutsideClick(closeHandler, listenCapturing = true) {
     },
     [closeHandler, listenCapturing]
   );
-
   return { ref };
 }
 

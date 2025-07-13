@@ -14,16 +14,14 @@ function useRecentStays() {
   const queryDate = subDays(new Date(), numDays).toISOString(); // we subtract numDays from today (new Date()) and convert that into ISO String
 
   const { data: stays, isLoading } = useQuery({
-    queryKey: ["bookings", `last-${numDays}`], // works like a dependency array
+    queryKey: ["stays", `last-${numDays}`], // works like a dependency array
     queryFn: function () {
       return getStaysAfterDate(queryDate); // function from apiBookings
     },
   });
-
-  const confirmedStays = stays?.filter(
-    (stay) => stay.status === "checked-in" || stay.status === "checked-out"
-  );
-
-  return { stays, confirmedStays, isLoading };
+  const confirmedStays = stays?.filter((stay) => {
+    return stay.status === "checked-in" || stay.status === "checked-out";
+  });
+  return { confirmedStays, isLoading, numDays };
 }
 export default useRecentStays;
