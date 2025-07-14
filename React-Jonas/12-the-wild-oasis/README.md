@@ -1,8 +1,11 @@
-# React + Vite
+# The Wild Oasis
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## React project to manage hotel-cabins
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Technologies used
+* Vite is used here to set-up this react-project
+* react-query is used here to manage remote state.
+* styled-components library is used to style components.
+* react-hook-form is used to manage and handle forms in this application.
+* context-api is used to manage UI state.
+* *supabase* is used as database for CRUD operations.

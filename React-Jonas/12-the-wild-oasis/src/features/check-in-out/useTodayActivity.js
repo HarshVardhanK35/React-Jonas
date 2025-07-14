@@ -5,9 +5,7 @@ function useTodayActivity() {
   const { data: activitiesToday, isLoading: isLoadingTodayActivity } = useQuery(
     {
       queryKey: ["today-activity"],
-      queryFn: function () {
-        return getStaysTodayActivity();
-      },
+      queryFn: getStaysTodayActivity,
     }
   );
 
