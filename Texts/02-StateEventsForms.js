@@ -6,7 +6,7 @@
  * 
  * ! 2. Handling Events the React Way
  * 
- * - we use declarative way of handling events without using "eventListener" like we did in vanilla javascript without selecting manipulating DOM 
+ * - we use declarative way of handling events without using "eventListener" like we did in vanilla javascript without selecting and manipulating DOM elements
  * - but in react we handle events in-line using "onClick".. every event starts with "on..."
  * - we specify an event directly on the element itself! 
  * ex-1: 
@@ -73,17 +73,17 @@ export default App;
  * 
  * ! 4. Creating a State Variable With useState
  * 
- * - To include a state inside a component >>> we have three states
- * -    1. creating a state variable.. using "useState" function
- * -    2. updating the initial values of the state
- * -    3. using the values of states
+ * - To include a state inside a component >>> we have three steps
+ *    - 1. creating a state variable.. using "useState" function
+ *    - 2. updating the initial values of the state
+ *    - 3. using the values of states
  * 
  * * Hooks in React:
  * ? hooks are tools in react
  * ? all the keywords that start with "use..." are called hooks in react
  * - ex: useState, useReducer, useEffect etc.,
  * 
- * - useState fn takes an argument..  that argument will be the default initial value for the state-variable
+ * - useState fn takes an argument..  that argument will become an initial value for the state-variable
  *    - useState fn returns an array..  that has to be destructured: using array destructuring >>> [] 
  *    - useState returns two values..   initial state and state updating function
  * 
@@ -232,7 +232,7 @@ function App() {
  *  
  * >>> Practical Guidelines About State
  * - 1. use state for any data when a component needs to track (remember).. when that data changes over the time
- * - 2. whenever we need dynamic things, use state variable for that "thing" and update the state of when that thing needs a change.
+ * - 2. whenever we need dynamic things, use state variable for that "thing" and update the state of when that "thing" needs a change.
  * - 3. if we wanted to change how the component shall look like, or change the data that it displays, "update it's state" >>> usually done with it's event handler  
  * - 4. when building a component, imagine it's view as a "reflection of state changing over a time"
  * - 5. if re-renders are not needed, or change in state is not needed use "regular variable"
@@ -280,7 +280,8 @@ function Form() {
  *    - 1. whenever we press "enter" after entering input
  *    - 2. and also whenever we click the "button" attached to the form
  * 
- * - Note that we have not attached this function on to the button!
+ * $ Note:
+ * - that we have not attached this function on to the button!
  * 
  * - so, we need to get the data from the form and select options.. we could get that from the "event" object
  *    - but in react we don't get the data from the form using "event object" but we get that using // >>> "controlled elements"
@@ -393,67 +394,6 @@ function PackingList() {
  * - whenever parent-child are interconnected with "props" and state inside the parent component updates ... then this changes the props and 
  *    - child component receives the changed props
  *    - in-order to keep child in sync with parent, re-renders happens!
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
  * 
  * 
  * 

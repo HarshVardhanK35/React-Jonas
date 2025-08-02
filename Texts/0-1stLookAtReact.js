@@ -12,8 +12,8 @@
  *      - we can re-use them to make complex web-apps
  * 
  * * Declarative:
- * - we describe how components look like and how they work using a declarative syntax called "JSX"
- *      - based on the current data/state  
+ * - we describe how components looks like & how they work using a declarative syntax called "JSX"
+ *      - based on the current data / state  
  *      - React abstracts DOM and it's manipulation.. react manipulates the DOM on behind.. we don't work with DOM as we did using JS
  * 
  * * JSX:
@@ -34,7 +34,7 @@
  * ---
  * - 1. this involves... including react related script tags, which fetches includes react into "index.html"... this can get from React's official docs [LINK]: "react.dev"
  * - 2. writing component.. App()
- *    - which returns a render-able time component.. which updates on every 1sec
+ *    - which returns a render-able time component.. which updates on every sec
  * - 3. Updating the time component is done with "React.useState()" and "React.useEffect()"
  * 
 ex:
@@ -85,118 +85,6 @@ ex:
  *      - 1. component name that we wanted to create that is "header"
  *      - 2. null: which is set in place of "PROPS"
  *      - 3. data that is rendered between created component that is "header"
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
  * 
  * 
  */

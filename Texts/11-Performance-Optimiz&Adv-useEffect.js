@@ -1001,8 +1001,8 @@ function App() {
  * ! WORLD-WISE-APP: Completed
  * 
  * 
- * 
- * 
+ * ! SKIPPED !
+ * - some lectures here!
  * 
  * 
  * 

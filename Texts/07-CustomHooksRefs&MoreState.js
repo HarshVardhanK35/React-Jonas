@@ -691,9 +691,11 @@ function useFetch(url) {
  * -----
 useEffect(
     function () {
-      const controller = new AbortController(); // to prevent the "race condition"
-      setIsLoading(true); // to render a loading indicator.. while app is fetching data
-      setError(""); // reset the error > every time we search for a movie
+      const controller = new AbortController(); // - to prevent the "race condition"
+
+      setIsLoading(true); // - to render a loading indicator.. while app is fetching data
+      setError(""); // - reset the error > every time we search for a movie
+
       async function fetchMovies() {
         try {
           const res = await fetch(
@@ -703,17 +705,19 @@ useEffect(
           if (!res.ok)
             throw new Error("Something went wrong while fetching movies!!!");
           const data = await res.json();
+
           if (data.Response === "False")
             throw new Error("Movie not found! Enter correct movie name!");
           setMovies(data.Search);
           setError("");
+
         } catch (err) {
           if (err.name !== "AbortError") {
             console.error(err.message);
             setError(err.message);
           }
         } finally {
-          setIsLoading(false); // whenever the data fetching was completed!
+          setIsLoading(false); // - whenever the data fetching was completed!
         }
       }
       if (query.length === 0) {
@@ -825,13 +829,13 @@ export default function App() {
 import { useState, useEffect } from "react";
 
 export function useLocalStorageState(initialState, key) {
-  // we used "value" not "watched" and same for setter fn too.. for reusing the custom-hook for other apps also
-  // what ever this below fn returns.. will be the value for 'initialState'
+  // - we used "value" not "watched" and same for setter fn too.. for reusing the custom-hook for other apps also
+  // - what ever this below fn returns.. will be the value for 'initialState'
   //
   const [value, setValue] = useState(function () {
     const storedValue = localStorage.getItem(key);
 
-    // sometimes if there were no items inside "localStorage" return initialState that is... []
+    // - sometimes if there were no items inside "localStorage" return initialState that is... []
     return storedValue ? JSON.parse(storedValue) : initialState;
   });
   useEffect(
@@ -849,14 +853,6 @@ const [watchedMovie, setWatchedMovie] = useLocalStorageState([], "watched");
  * 
  * ! 13. Creating useKey
  * - SKIPPED !!!
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
  * 
  * 
  * 

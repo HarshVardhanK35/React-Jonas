@@ -123,7 +123,7 @@ fetch(`http://www.omdbapi.com/?apikey=${KEY}&s=interstellar`)
  * * REASON
  * - why all these fetch requests are fired off every second to that API URL?
  *    - setting the state inside "render-logic" which cause the component to re-render itself again
- *    - re-render means again the component executes again, and also fetch() function executes again and data is set to "setMovies" state and again this cause re-render.. 
+ *    - re-render means the component executes again, and also fetch() function executes again and data is set to "setMovies" state and again this cause re-render..
  *    - this process happens again and again! 
  * 
  * * Problem
@@ -400,7 +400,7 @@ export default function App() {
  * >>> there could be two chances: "internet connection" and "search query string"
  * 
  * #1 there could be a problem with internet connection
- * #and 
+ * and 
  * #2. there could be a problem with search query
  * 
  * - mostly there would be a possible internet disconnections at user-end (can be simulate inside Network Tab > Throttling: Slow-3G)
@@ -883,10 +883,9 @@ const res = await fetch(
  * - we want to cancel the current request each time that a new request for new string comes in >>> that is the exact point >>> clean-up function gets executed
  * 
 //>>> cancel the fetch req for strings other than last and complete movie name: "inception (last)"
-fetchMovies();
-  return function () {      
-    controller.abort();   
-  };
+return function () {      
+  controller.abort();   
+};
 ...
  * 
  * - but JS sees that as an error, each time when a fetch req cancelled >>> so we get an error => each time when a fetch req has been cancelled
@@ -963,6 +962,7 @@ useEffect(
  * 
  * ? what is happening >>> each time a new movie details comp inst renders a new event-listener attaches to document (with the previous one we already had).. that is why the fun result gets accumulated!
  * 
+ * 
  * >>> sol:
  * - we need to clean-up the event listener, so return a function again from the effect >>> which removes the previous event-listener on every re-render!
  * 
@@ -1011,240 +1011,6 @@ useEffect(
   },
   [onCloseMovieDetails]
 );
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- *
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
  * 
  * 
  * 

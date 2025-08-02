@@ -79,7 +79,7 @@
  * - so, after lifting the state to the common parent, the state variable can be passed to the both children through props
  *    - (the state-setter function can also be shared via props)
  * 
- * $ Note:
+ * $ Note: 
  * - if a child wants to set new state or update the existing state, as the state lies inside the common parent...
  *      - we cannot change the state that lies inside the parent
  * >>> so, the setter function can also be shared to the child component via props and can be updated inside that child!
@@ -340,6 +340,7 @@ const [totalPrice, setTotalPrice] = useState(30.98);
  * - 3 state updates will cause 3 re-renders in UI
  * 
  * * Derived State:
+ * 
  * - instead of creating three separate states.. we can create a derived state (derived from a single and existing state)
  * - ex:- 
 cons-----t [cart
@@ -432,136 +433,6 @@ function Button({ bgColor, txtColor, onClick, children }) {   // >>> received as
   );
 } 
  * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- *
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
+ *  
  * 
  */

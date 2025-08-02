@@ -639,7 +639,7 @@ import accountReducer from "./features/accounts/accountSlice";
 import customerReducer from "./features/customers/customerSlice";
 
 // - combining more "reducers" 
-//=> combineReducers()
+// >>> combineReducers()
 const rootReducer = combineReducers({
   account: accountReducer,
   customer: customerReducer,

@@ -1,5 +1,4 @@
 // ! The Advanced useReducer Hook
-
 /**
  * ! 1. Yet Another Hook: "useReducer"
  * 
@@ -426,89 +425,7 @@ dispatch({type: "startGame"})
  * 
  * 
  * 
- * 
  * $ remember:
  * - what ever the payload that is sent from "dispatch" fn is "data"
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
  * 
  */

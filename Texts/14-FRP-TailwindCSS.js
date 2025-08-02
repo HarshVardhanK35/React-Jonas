@@ -21,7 +21,7 @@
  *      - understand styling in any project which uses Tailwind 
  *      - Tailwind makes UI look better and more consistent 
  *      - saves lot of time (best for responsive design)
- *      - 
+ * 
  * (DIS)
  *      - markup looks unreadable: if we use lots of classes
  *      - we need to learn lot of classes 
